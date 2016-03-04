@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
-#property version   "1.00"
+#property version   "1.01"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -22,5 +22,11 @@ class Enums
      {
       Liquido,  // Líquido
       Bruto     // Bruto
+     };
+     
+     enum eConfirmar
+     {
+         No=0,  // Não
+         Yes=1, // Sim
      };
   };

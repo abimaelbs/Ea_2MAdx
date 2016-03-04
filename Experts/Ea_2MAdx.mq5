@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015, Abimael B. Silva."
 #property link      "https://www.mql5.com"
-#property version   "1.5"
+#property version   "1.06"
 #property description "Este EA é basedo em 2 Médias Móveis e um ADX, optimizado para WIN e WDO M1" // Description (line 1)
 #property description "Compra: Média Móvel de curto período deve estar acima da média de Longo período." 
 #property description "Preço acima da Média de curto período, entrada no rompimento e 2 candle" 
@@ -24,44 +24,55 @@
 //+------------------------------------------------------------------+ 
 
 // Parametros de entrada
-input string   Sessao_01="===== Configurações do volume";//Volume
+input string   Sessao_01="===== Configurações do volume"; //Volume (MINI-INDICE)
 input double   Lote=3.0;            // Lotes para o Trade
 input double   TakeProfit=300;      // Ganho TP(Pontos)
 input double   StopLoss=80;         // Perda SL(Pontos)
-input string   Sessao_02="===== Configurações Indicadores"; //Indicadores
-input int      MA_Periodo=17;       // Período Média Móvel
-input int      MALong_Periodo=72;   // Período Média Móvel Longa
-input ENUM_MA_METHOD MetodoMM=MODE_EMA;// Método Média Móvel
-input string   Sessao_03="===== Configurações Break-Even"; //BreakEven
-input bool     UsarBreakEven=true; // Usar Breakeven
-input double   BreakEven=50;        // Valor para início Break Even
+
+input string   Sessao_02="===== Configuração Realização Parcial"; //Saida Parcial
+input eConfirmar IsSaidaParcial= true; // Usar Saida Parcial
+input double   LoteSaidaParcial_1 = 1.0; // Lotes para saida parcial (Primeira)
+input double   ValorSaidaParcial_1= 100; // Ganho TP Saida Parcial(Pontos)
+input double   LoteSaidaParcial_2 = 1.0; // Lotes para saida parcial (Segunda)
+input double   ValorSaidaParcial_2= 150; // Ganho TP Saida Parcial(Pontos)
+
+input string   Sessao_04="===== Configurações Break-Even"; //BreakEven
+input eConfirmar UsarBreakEven=true; // Usar Breakeven
+input double   BreakEven=60;        // Valor para início Break Even
 input double   PontosAcimaEntrada=20;// Pontos acima do preço de entrada
-input string   Sessao_04="===== Configurações Trailing Stop"; //Trailing Stop
-input bool     UsarTralingStop=true; // Usar Trailing Stop
+
+input string   Sessao_05="===== Configurações Trailing Stop"; //Trailing Stop
+input eConfirmar UsarTralingStop=true; // Usar Trailing Stop
 input double   InicioTrailingStop=100;// Início Trailing Stop
 input double   MudancaTrailing=20;   // Valor mudança Trailing Stop
-input string   Sessao_05="===== Configuração Quant. Op. Gain e Loss"; //Total Operações
+
+input string   Sessao_06="===== Configuração Quant. Op. Gain e Loss"; //Total Operações
 input int      MaximoStopGain=0; // Máximo total trade com Stop Gain
 input int      MaximoStopLoss=4; // Máximo total trade com Stop Loss
-input string   Sessao_06="===== Configuração Preço de Ajuste"; //Preço de Ajuste
+
+input string   Sessao_07="===== Configuração Preço de Ajuste"; //Preço de Ajuste
 input double   PrecoAjuste = 0.0;   // Comprar/Vender no Preço de ajuste
 input color    CorLinhaAjuste = RoyalBlue; // Preço de ajuste(Cor)
 //input ENUM_OBJECT Objeto = OBJ_HLINE;
-input string   Sessao_07="===== Configuração Horário Trade"; //Horário
-input string   HoraInicio = "09:05"; // Hora Início do Trader
-input string   HoraFim    = "17:55"; // Hora Fim do Trader
 input string   Sessao_08="===== Configuração Meta Diária"; //Meta diária
-input bool     UsarMetaDiaria=true; //Usar Meta Diáia
+input eConfirmar UsarMetaDiaria=true; //Usar Meta Diáia
 input double   ValorCorretagem = 2.00; // Valor corretagem (R$)
 //input double   ValorTaxas = 9.00; // Valor taxa IBOV (R$)
-input double   TotalMeta = 50.00; // Total meta (R$)
-input eTipoMeta TipoMeta = Liquido; // Total pelo valor (Liquido/Bruto)
-input string   Sessao_09="===== Configuração Saida Parcial"; //Saida Parcial
-input bool     IsSaidaParcial= true; // Usar Saida Parcial
-input double   LoteSaidaParcial_1 = 2.0; // Lotes para saida parcial
-input double   ValorSaidaParcial_1= 80; // Ganho TP Saida Parcial(Pontos)
+input double   TotalMeta = 60.00; // Total meta (R$)
+input eTipoMeta TipoMeta = Liquido; // Total do valor (Liquido/Bruto)
+
+input string   Sessao_03="===== Configurações Indicadores"; //Indicadores
+input int      MA_Periodo=17;       // Período Média Móvel
+input int      MALong_Periodo=72;   // Período Média Móvel Longa
+input ENUM_MA_METHOD MetodoMM=MODE_EMA;// Método Média Móvel
+//input int      ADX_Period=14;      // ADX Período
+input double   Adx_Min=20.0;       // Valor mínimo ADX
+
+input string   Sessao_09="===== Configuração Horário Trade"; //Horário
+input string   HoraInicio = "09:10"; // Hora Início do Trader
+input string   HoraFim    = "17:55"; // Hora Fim do Trader
 input string   Sessao_10="===== Configuração Identificador EA"; //ID
-input int      EA_Magico=1234; // Identificador EA
+input int      EA_Magico=12345; // Identificador EA
 
 
 // Criando objeto da classe
@@ -77,6 +88,7 @@ int OnInit()
    CExpert.SetPeriodo(_Period);
    CExpert.SetNumeroMagico(EA_Magico);
    CExpert.SetLote(Lote);
+   CExpert.SetADX_Minimo(Adx_Min);
    CExpert.SetTakeProfit(TakeProfit);
    CExpert.SetStopLoss(StopLoss);
    CExpert.SetMaxGain(MaximoStopGain);
@@ -100,6 +112,8 @@ int OnInit()
    CExpert.SetUsarSaidaParcial(IsSaidaParcial);
    CExpert.SetLoteSaidaParcial_1(LoteSaidaParcial_1);
    CExpert.SetValorSaidaParcial_1(ValorSaidaParcial_1);
+   CExpert.SetLoteSaidaParcial_2(LoteSaidaParcial_2);
+   CExpert.SetValorSaidaParcial_2(ValorSaidaParcial_2);
    
    CExpert.DoInit(MA_Periodo,MALong_Periodo);
    

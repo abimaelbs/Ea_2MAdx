@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
-#property version   "1.1"
+#property version   "1.2"
 #include <Trade/Trade.mqh>
 #include <Mine/Enums.mqh>
 
@@ -27,7 +27,7 @@ public:
                      double qtdLote /*Quantidade de lotes na operação*/);
    bool ValidarHoraEntrada(string horaInicio, string horaFim);
    bool ValidarHoraSaida(string horaFinal);
-   bool IsNewBar();
+   bool IsNewBar(string simbolo);
    bool IsNewDay();
    void BreakEven(string simbolo /*Simbolo */,
                   int tpOrdem /*Tipo de ordem*/,
@@ -42,6 +42,8 @@ public:
                      int tpOrdem /*Tipo de ordem*/,                     
                      double loteSaida /*Valor acima da entrada*/,
                      double valorSaida);
+                     
+   void WriteFile(string texto="");                     
   };
 
 //+------------------------------------------------------------------+ 
@@ -50,7 +52,8 @@ public:
 
 bool Utils::SaidaParcial(string simbolo,int tpOrdem, double loteSaida,double valorSaida)
 {
-   if(_Symbol != simbolo && clTrade.RequestMagic() != _NumeroMagico) return(false);
+   //if(_Symbol != simbolo && clTrade.RequestMagic() != _NumeroMagico) return(false);
+   if(_Symbol != simbolo) return(false);
    
    if(!SymbolInfoTick(simbolo,precoRecente))
       Print("Erro ao obter a última cotação de preço",GetLastError());
@@ -89,7 +92,8 @@ bool Utils::SaidaParcial(string simbolo,int tpOrdem, double loteSaida,double val
 //+------------------------------------------------------------------+  
 void Utils::TrailingStop(string simbolo, int tpOrdem,double valorInicio,double valorMudarTrailing)
 {
-   if(_Symbol != simbolo && clTrade.RequestMagic() != _NumeroMagico) return;
+   //if(_Symbol != simbolo && clTrade.RequestMagic() != _NumeroMagico) return;
+   if(_Symbol != simbolo) return;
    
    if(!SymbolInfoTick(simbolo,precoRecente))
       Print("Erro ao obter a última cotação de preço",GetLastError());
@@ -149,7 +153,8 @@ void Utils::TrailingStop(string simbolo, int tpOrdem,double valorInicio,double v
 //+------------------------------------------------------------------+
 void Utils::BreakEven(string simbolo,int tpOrdem,double inicioBreakEven,double valorAcimaEntrada)
 {
-   if(_Symbol != simbolo && clTrade.RequestMagic() != _NumeroMagico) return;
+   //if(_Symbol != simbolo && clTrade.RequestMagic() != _NumeroMagico) return;
+   if(_Symbol != simbolo) return;
    
    if(PositionSelect(simbolo))
    {
@@ -314,9 +319,10 @@ bool Utils::ValidarHoraSaida(string horaFinal)
 //+------------------------------------------------------------------+ 
 //| Retorna true de há uma nova barra                                | 
 //+------------------------------------------------------------------+
-bool Utils::IsNewBar(void)
+bool Utils::IsNewBar(string simbolo)
 {
-   //if(clTrade.RequestMagic() != _NumeroMagico) return(false);;
+   //if(clTrade.RequestMagic() != _NumeroMagico) return(false);
+   if(_Symbol != simbolo) return(false);
    
    MqlRates _Mrate[];
    ZeroMemory(_Mrate);
@@ -327,9 +333,7 @@ bool Utils::IsNewBar(void)
     
    datetime static Prev_time;
    datetime Bar_time[1];
-   Bar_time[0]=_Mrate[0].time;
-
-   //int copied=CopyTime(_Symbol,_Period,0,1,Bar_time);
+   Bar_time[0]=_Mrate[0].time;   
 
    if(Prev_time==Bar_time[0])
       return(false);
@@ -355,4 +359,22 @@ bool Utils::IsNewDay(void)
      }
      
    return(false);
-}
+}//+------------------------------------------------------------------+
+//| Save data to file                                                |
+//+------------------------------------------------------------------+
+void Utils::WriteFile(string texto="")
+  {
+   //--- open the file
+   ResetLastError();      
+   int han=FileOpen(MQL5InfoString(MQL5_PROGRAM_NAME)+".txt",FILE_WRITE|FILE_TXT|FILE_ANSI," ");
+   //--- check if the file has been opened
+   if(han!=INVALID_HANDLE)
+     {
+      FileWrite(han,texto); // ?????? ??????
+      FileClose(han);       // ???????? ?????
+     }
+   else
+      Print("Falha ao abrir arquivo "+MQL5InfoString(MQL5_PROGRAM_NAME)+".txt, error",GetLastError());
+  }
+
+

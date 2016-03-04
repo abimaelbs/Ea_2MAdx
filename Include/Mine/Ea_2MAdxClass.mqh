@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
-#property version   "1.5"
+#property version   "1.06"
 
 #include <Trade/Trade.mqh>
 #include <Mine/Utils.mqh>
@@ -17,7 +17,8 @@ int   totalGains,
 double totalCorretagem,
        totalProfit,
        valarTotalLoss;
-bool   primeiraSaida;
+bool   primeiraSaida,
+       segundaSaida;
 
 //+------------------------------------------------------------------+
 //|   Declaração                                                     |
@@ -28,10 +29,15 @@ private:
    double            _Lote;           // Parametro do Volume de lotes para o Trade.
    double            _TakeProfit;     // Ganho
    double            _StopLoss;       // Perda 
+   double            _Adx_Minimo;     // Valor mínimo ADX
    bool              _UsarBreakEven;  // Usar breakeven
+   
    bool              _UsarSaidaParcial; //  Saida Parcial
    double            _LoteSaidaParcial_1;// Quantidade de lote na saida parcial
    double            _ValorSaidaParcial_1;// Valor em pontos para saida parcial
+   double            _LoteSaidaParcial_2;// Quantidade de lote na saida parcial
+   double            _ValorSaidaParcial_2;// Valor em pontos para saida parcial
+   
    double            _BreakEvenVal;   // Trazer valor para o 0x0   
    double            _TicksAcimaBreakEven; // Quantidade acima do preço
    bool              _UsarTralingStop; //Usar Trailing Stop
@@ -82,12 +88,15 @@ public:
    /* Métodos Set*/
    void SetLote(double lote){ _Lote=lote; }
    void SetTakeProfit(double tp) { _TakeProfit=tp; }
+   void SetADX_Minimo(double adx) { _Adx_Minimo=adx; }
    void SetStopLoss(double sl) {  _StopLoss=sl; }
    void SetUsarBreakEven(bool bk) { _UsarBreakEven = bk; }
    
    void SetUsarSaidaParcial(bool sa) { _UsarSaidaParcial = sa; }
    void SetLoteSaidaParcial_1(double sp) { _LoteSaidaParcial_1 = sp; }
    void SetValorSaidaParcial_1(double vs) { _ValorSaidaParcial_1= vs; }
+   void SetLoteSaidaParcial_2(double sp2) { _LoteSaidaParcial_2 = sp2; }
+   void SetValorSaidaParcial_2(double vs2) { _ValorSaidaParcial_2= vs2; }
    
    void SetBreakEven(double bv) {_BreakEvenVal=bv; }
    void SetTicksBreakEven(double tbv) {_TicksAcimaBreakEven=tbv; }
@@ -144,6 +153,7 @@ Ea_2MAdxClass::~Ea_2MAdxClass()
    IndicatorRelease(_MA_Manusear);   
    IndicatorRelease(_MALong_Manusear);
    IndicatorRelease(_ADX_Manusear);
+   //_clUtils.WriteFile("Teste");
   }
 //+------------------------------------------------------------------+
 
@@ -159,6 +169,7 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    cTrade.SetExpertMagicNumber(_NumeroMagico);
    totalGains=0;totalLoss=0;totalCorretagem=0;totalProfit=0;valarTotalLoss=0;
    primeiraSaida = false;
+   segundaSaida = false;
   }
 
 //+------------------------------------------------------------------+ 
@@ -170,6 +181,16 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    
    GetBuffers();   
 
+   // Se debugando
+   /*
+   if(MQL5_DEBUGGING)
+   {
+      if(_MA_Valor[0] > _MALong_Valor[0] )
+         return(ORDER_TYPE_BUY);
+     if(_MA_Valor[0] < _MALong_Valor[0] ) 
+      return(ORDER_TYPE_SELL);                        
+   } */
+   
    /* Se condição de compra.
       Se preço negociado acima da média móvel e barra anterior acima da média móvel.
    */
@@ -181,11 +202,11 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       // Se negócio abaixo do preço de ajuste, não comprar 
       if(_PrecoDeAjuste > 0 && latest_price.last < _PrecoDeAjuste) return(-1);
               
-      if(_ADX_Valor[0] > 22 && _ADX_Valor[0] > _ADX_Valor[1] &&
+      if(_ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&
         _MaiorDI[0] > _MaiorDI[1] && _MaiorDI[1] > _MaiorDI[2] && 
         latest_price.last>mrate[1].high) 
       {            
-         if(_clUtils.IsNewBar())
+         if(_clUtils.IsNewBar(_Simbolo))
          {            
             return(ORDER_TYPE_BUY);
          }
@@ -204,11 +225,11 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       // Se negócio acima do preço de ajuste, não vender
       if(_PrecoDeAjuste > 0 && latest_price.last > _PrecoDeAjuste) return(-1);
             
-      if(_ADX_Valor[0] > 22 && _ADX_Valor[0] > _ADX_Valor[1] &&
+      if(_ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&
          _MenorDI[0] > _MenorDI[1] && _MenorDI[1] > _MenorDI[2] && 
          latest_price.last<mrate[1].low)       
       {                  
-         if(_clUtils.IsNewBar())
+         if(_clUtils.IsNewBar(_Simbolo))
          {            
             return(ORDER_TYPE_SELL);
          }
@@ -282,7 +303,7 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
      
    if((_TotalGain > 0 && totalGains == _TotalGain) || (_TotalLoss > 0 && totalLoss == _TotalLoss)) return;
    
-   primeiraSaida=false;
+   primeiraSaida = segundaSaida = false;   
       
    GetBuffers();
       
@@ -337,7 +358,7 @@ bool Ea_2MAdxClass::CheckCloseTrade()
          return(true);
       }     
      }
-   _clUtils.IsNewBar();
+   _clUtils.IsNewBar(_Simbolo);
    return(false);
   }
 //+------------------------------------------------------------------+ 
@@ -484,14 +505,14 @@ void Ea_2MAdxClass::DesenharOBJ(double preco,long cor)
 void Ea_2MAdxClass::SaidaParcial(int tipoOrder)
 {     
    // Executar a 1ª Saida parcial
-   if(primeiraSaida == false && _ValorSaidaParcial_1 > 0 && _LoteSaidaParcial_1 > 0)
+   if(primeiraSaida == false && _ValorSaidaParcial_1 > 0 && _LoteSaidaParcial_1 > 0 && _UsarSaidaParcial)
    {
      _clUtils.SetNumeroMagico(_NumeroMagico);
      primeiraSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_1,_ValorSaidaParcial_1);
    }
-   //else if(segundaSaida == false && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0)
-   //{
-   //   _clUtils.SetNumeroMagico(_NumeroMagico);
-   //   segundaSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_2,_ValorSaidaParcial_2);
-   //}
+   else if(segundaSaida == false && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
+   {
+      _clUtils.SetNumeroMagico(_NumeroMagico);
+      segundaSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_2,_ValorSaidaParcial_2);
+   }
 }

@@ -183,7 +183,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
 
    // Se debugando
    /*
-   if(MQL5_DEBUGGING)
+   if ( MQL5InfoInteger(MQL5_DEBUGGING) )
    {
       if(_MA_Valor[0] > _MALong_Valor[0] )
          return(ORDER_TYPE_BUY);
@@ -206,17 +206,14 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
         _MaiorDI[0] > _MaiorDI[1] && _MaiorDI[1] > _MaiorDI[2] && 
         latest_price.last>mrate[1].high) 
       {            
-         if(_clUtils.IsNewBar(_Simbolo))
-         {            
-            return(ORDER_TYPE_BUY);
-         }
+         if(_clUtils.IsNewBar(_Simbolo))                     
+            return(ORDER_TYPE_BUY);         
       }
    }
 
    /* Se condição de venda.
       Se preço abaixo da média móvel e barra anterior menor que a média móvel.
-   */
-   //if(latest_price.last < _MA_Valor[0] && mrate[1].low < _MA_Valor[0] && _MA_Valor[0] < _MALong_Valor[0])
+   */   
    if(_MA_Valor[0] < _MALong_Valor[0] && latest_price.last < _MA_Valor[0] && mrate[1].low < _MA_Valor[1])   
    {
       if(GetPeriodo()==1)                 
@@ -229,10 +226,8 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
          _MenorDI[0] > _MenorDI[1] && _MenorDI[1] > _MenorDI[2] && 
          latest_price.last<mrate[1].low)       
       {                  
-         if(_clUtils.IsNewBar(_Simbolo))
-         {            
+         if(_clUtils.IsNewBar(_Simbolo))                   
             return(ORDER_TYPE_SELL);
-         }
       }        
    }
 
@@ -301,7 +296,7 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
    // Se já alcançou meta diária, não opera mais   
    if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return;
      
-   if((_TotalGain > 0 && totalGains == _TotalGain) || (_TotalLoss > 0 && totalLoss == _TotalLoss)) return;
+   if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return;
    
    primeiraSaida = segundaSaida = false;   
       
@@ -488,9 +483,7 @@ void Ea_2MAdxClass::DesenharOBJ(double preco,long cor)
 
    if(!preco)
       preco=SymbolInfoDouble(_Simbolo,SYMBOL_BID);
-      
-   //if(!obj) obj = OBJ_HLINE;// ENUM_OBJECT
-                        
+                      
    ObjectCreate(0,"LnAjuste",OBJ_HLINE,0,date[0],preco,0);           
    ObjectSetInteger(0,"LnAjuste",OBJPROP_COLOR,cor);
    ObjectSetInteger(0,"LnAjuste",OBJPROP_STYLE,STYLE_DASH);
@@ -509,7 +502,7 @@ void Ea_2MAdxClass::SaidaParcial(int tipoOrder)
    {
      _clUtils.SetNumeroMagico(_NumeroMagico);
      primeiraSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_1,_ValorSaidaParcial_1);
-   }
+   } // Executar a 2ª Saida parcial
    else if(segundaSaida == false && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
    {
       _clUtils.SetNumeroMagico(_NumeroMagico);

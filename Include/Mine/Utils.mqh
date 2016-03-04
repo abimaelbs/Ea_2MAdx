@@ -69,7 +69,7 @@ bool Utils::SaidaParcial(string simbolo,int tpOrdem, double loteSaida,double val
       {                  
          if ((precoRecente.last >=  precoEntrada + valorSaida) && (loteSaida < qtdLoteAberto))
          {                                 
-            clTrade.Sell(loteSaida,simbolo,precoRecente.bid,0,0,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Saida Parcial:"+(string)loteSaida+" lt)");
+            clTrade.Sell(loteSaida,simbolo,precoRecente.bid,0,0,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Saida Parcial:"+(string)loteSaida+"Lot)");
             clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);
             return(true);     
          }               
@@ -78,7 +78,7 @@ bool Utils::SaidaParcial(string simbolo,int tpOrdem, double loteSaida,double val
       {
        if ((precoRecente.last <=  precoEntrada - valorSaida) && (loteSaida < qtdLoteAberto))
          {                                 
-            clTrade.Buy(loteSaida,simbolo,precoRecente.ask,0,0,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Saida Parcial:"+(string)loteSaida+" lt)");
+            clTrade.Buy(loteSaida,simbolo,precoRecente.ask,0,0,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Saida Parcial:"+(string)loteSaida+"Lot)");
             clTrade.PositionModify(simbolo,posisao_sl,posisao_tp); 
             return(true);  
          }

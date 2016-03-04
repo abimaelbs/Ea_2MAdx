@@ -117,9 +117,9 @@ int OnInit()
    
    CExpert.DoInit(MA_Periodo,MALong_Periodo);
    
-   if(IsSaidaParcial && LoteSaidaParcial_1 >= Lote)
+   if((IsSaidaParcial && LoteSaidaParcial_1 > Lote) || (IsSaidaParcial && LoteSaidaParcial_2 > Lote) )
    {
-      CExpert.ShowAlert("Lote saida parcial não deve ser maior ou igual a Lote do Trade");
+      CExpert.ShowAlert("Lote saida parcial não deve ser maior que Lote do Trade");
       return(-1);
    }
    

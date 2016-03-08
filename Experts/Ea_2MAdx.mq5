@@ -33,9 +33,9 @@ input double   StopLoss=80;         // Perda SL(Pontos)
 input string   Sessao_02="===== Configuração Realização Parcial"; //Saida Parcial
 input eConfirmar UsarSaidaParcial= true; // Usar Saida Parcial
 input double   LoteSaidaParcial_1 = 1.0; // Lotes para saida parcial (Primeira)
-input double   ValorSaidaParcial_1= 100; // Ganho TP Saida Parcial(Pontos)
+input double   ValorSaidaParcial_1= 120; // Ganho TP Saida Parcial(Pontos)
 input double   LoteSaidaParcial_2 = 1.0; // Lotes para saida parcial (Segunda)
-input double   ValorSaidaParcial_2= 150; // Ganho TP Saida Parcial(Pontos)
+input double   ValorSaidaParcial_2= 180; // Ganho TP Saida Parcial(Pontos)
 
 input string   Sessao_03="===== Configurações Break-Even"; //BreakEven
 input eConfirmar UsarBreakEven=true; // Usar BreakEven
@@ -67,6 +67,7 @@ input int      MA_Periodo=17;       // Período Média Móvel
 input int      MALong_Periodo=72;   // Período Média Móvel Longa
 input ENUM_MA_METHOD MetodoMM=MODE_EMA;// Método Média Móvel
 input double   Adx_Min=21.0;           // Valor mínimo ADX
+input eConfirmar UsarStopATR = false;  // Usar Stop ATR
 
 input string   Sessao_09="===== Configuração Horário Trade"; //Horário
 input string   HoraInicio = "09:10"; // Hora Início do Trader
@@ -107,6 +108,7 @@ int OnInit()
    CExpert.SetUsarMetaDiaria(UsarMetaDiaria);
    CExpert.SetValorTotalMeta(TotalMeta);
    CExpert.SetTipoMeta(TipoMeta);
+   CExpert.SetUsarStopATR(UsarStopATR);
    
    CExpert.SetUsarSaidaParcial(UsarSaidaParcial);
    CExpert.SetLoteSaidaParcial_1(LoteSaidaParcial_1);

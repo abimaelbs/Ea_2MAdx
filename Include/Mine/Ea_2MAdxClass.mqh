@@ -34,6 +34,7 @@ private:
    double            _StopLoss;       // Perda 
    double            _Adx_Minimo;     // Valor mínimo ADX
    bool              _UsarBreakEven;  // Usar breakeven
+   bool              _UsarStopATR;    // Usar Stop ATR, configuraçõa automáotica de stop
    
    bool              _UsarSaidaParcial; //  Saida Parcial
    double            _LoteSaidaParcial_1;// Quantidade de lote na saida parcial
@@ -55,12 +56,14 @@ private:
    eTipoMeta         _TipoMeta;        // Tipo meta (liquido/bruto)
    int               _MA_Manusear;     // Moving avarege para manusear da Média Móvel Simples
    int               _MALong_Manusear; // Moving avarege para manusear da Média Móvel Simples
-   double            _MAShort_Valor[];     // Array para os valores da Média Móvel Simples.    
+   double            _MAShort_Valor[];  // Array para os valores da Média Móvel Simples.    
    double            _MALong_Valor[]; // Array para os valores da Média Móvel Simples.    
    int               _ADX_Manusear;   // ADX para manusear.
    double            _ADX_Valor[];    // ADX valor       
    double            _MaiorDI[];      // Array para +BB do Banda de Boliger (Superior=1)
    double            _MenorDI[];      // Array para -BB do Banda de Boliger (Inferior=2)   
+   int               _ATR_Manusear;   // Stop ATR
+   double            _ATR_Valor[];    // Valor ATR
    string            _HoraInicio;     // Usar controle de horas para entrada na operação
    string            _HoraFim;        // Usar controle de horas para saída na operação      
    int               _NumeroMagico;   // Código do Expert Advisor.      
@@ -94,6 +97,7 @@ public:
    void SetADX_Minimo(double adx) { _Adx_Minimo=adx; }
    void SetStopLoss(double sl) {  _StopLoss=sl; }
    void SetUsarBreakEven(bool bk) { _UsarBreakEven = bk; }
+   void SetUsarStopATR(bool atr) { _UsarStopATR = atr; }
    
    void SetUsarSaidaParcial(bool sa) { _UsarSaidaParcial = sa; }
    void SetLoteSaidaParcial_1(double sp) { _LoteSaidaParcial_1 = sp; }
@@ -148,20 +152,6 @@ Ea_2MAdxClass::Ea_2MAdxClass()
    ZeroMemory(_Result);   
   }
 
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-/*
-Ea_2MAdxClass::~Ea_2MAdxClass()
-  {
-   IndicatorRelease(_MA_Manusear);   
-   IndicatorRelease(_MALong_Manusear);
-   IndicatorRelease(_ADX_Manusear);
-   //_clUtils.WriteFile("Teste");
-  }
-  */
-//+------------------------------------------------------------------+
-
 //+------------------------------------------------------------------+ 
 //| Inicializar objetos                                              |
 //+------------------------------------------------------------------+
@@ -173,6 +163,7 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    _MALong_Manusear= iCustom(_Simbolo,_Periodo,"Custom_iMALong", maLong, _MetodoMA, PRICE_CLOSE);
    _MA_Manusear    = iCustom(_Simbolo,_Periodo,"Custom_iMAShort", ma, _MetodoMA, PRICE_CLOSE);    
    _ADX_Manusear   = iCustom(_Simbolo,_Periodo,"CustomADX",14); 
+   _ATR_Manusear   = iATR(_Simbolo,_Periodo,14);
 
    // _MA_Manusear     = iMA(_Simbolo,_Periodo,ma,0,_MetodoMA,PRICE_CLOSE);         
    // _MALong_Manusear = iMA(_Simbolo,_Periodo,maLong,0,_MetodoMA,PRICE_CLOSE);
@@ -188,7 +179,7 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    
    if(!cchart.IndicatorAdd(0,_MALong_Manusear)) Print(" Falha ao adicionar Media móvel no chart"); 
    if(!cchart.IndicatorAdd(0,_MA_Manusear)) Print("Falha ao adicionar Media móvel no chart"); 
-   if(!cchart.IndicatorAdd(1,_ADX_Manusear)) Print(" Falha ao adicionar ADX no chart"); 
+   if(!cchart.IndicatorAdd(1,_ADX_Manusear)) Print(" Falha ao adicionar ADX no chart");       
   }
 //+------------------------------------------------------------------+
 //| Destrutor                                                        | 
@@ -199,7 +190,7 @@ void Ea_2MAdxClass::DoUnit(void)
    
    cchart.IndicatorDelete(0,"EMA(17)");  
    cchart.IndicatorDelete(0,"EMA(72)");
-   cchart.IndicatorDelete(1,"ADX(14)");
+   cchart.IndicatorDelete(1,"ADX(14)");   
           
    //Print("Nome Indicador: "+ cchart.IndicatorName(0,1)); 
    //Print("Nome Indicador: "+ cchart.IndicatorName(0,2)); 
@@ -208,6 +199,7 @@ void Ea_2MAdxClass::DoUnit(void)
    IndicatorRelease(_MA_Manusear);   
    IndicatorRelease(_MALong_Manusear);
    IndicatorRelease(_ADX_Manusear);
+   IndicatorRelease(_ATR_Manusear);
    cchart.Detach(); 
    Comment("");
    //_clUtils.WriteFile("Teste");
@@ -323,7 +315,8 @@ void Ea_2MAdxClass::GetBuffers(void)
       CopyBuffer(_ADX_Manusear,1,0,3,_MaiorDI)<0 || 
       CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0 || 
       CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0 || 
-      CopyBuffer(_MALong_Manusear,0,0,3,_MALong_Valor) < 0      
+      CopyBuffer(_MALong_Manusear,0,0,3,_MALong_Valor) < 0 ||
+      CopyBuffer(_ATR_Manusear,0,0,3,_ATR_Valor)<0     
       )
       ShowErro("Erro ao copiar Buffers dos indicadores",GetLastError());
 
@@ -383,6 +376,9 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
          tp= NormalizeDouble(latest_price.bid + (_TakeProfit*_Point)*10,_Digits);
       else if(_TakeProfit>0) tp=latest_price.bid+NormalizeDouble(_TakeProfit,_Digits);
       
+      if(_UsarStopATR)               
+         sl = latest_price.bid-NormalizeDouble((_ATR_Valor[0] * 2.5),_Digits);      
+      
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       cTrade.Buy(_Lote,_Simbolo,latest_price.bid,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra)");
      }
@@ -395,6 +391,9 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
       if((_Digits==5) && _TakeProfit>0)
          tp= NormalizeDouble(latest_price.ask - (_TakeProfit*_Point)*10,_Digits);
       else if(_TakeProfit>0) tp=latest_price.ask-NormalizeDouble(_TakeProfit,_Digits);
+      
+      if(_UsarStopATR)               
+         sl = latest_price.ask+NormalizeDouble((_ATR_Valor[0] * 2.5),_Digits);
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       cTrade.Sell(_Lote,_Simbolo,latest_price.ask,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda)");

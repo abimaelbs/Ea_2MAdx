@@ -10,6 +10,9 @@
 #include <Trade/Trade.mqh>
 #include <Mine/Utils.mqh>
 #include <Mine/Enums.mqh>
+#include <Charts\Chart.mqh>
+
+CChart cchart;
 CTrade cTrade;
 
 int   totalGains,
@@ -74,10 +77,10 @@ private:
 public:   
    /* Métodos Básicos para todos os EA's*/
                      Ea_2MAdxClass(); //Construtor
-                    ~Ea_2MAdxClass(); //Destrutor
+                    //~Ea_2MAdxClass(); //Destrutor
    void              DoInit(int ma,int maLong); //Inicializar indicadores
    void              DoUnit();   
-   void              ShowErro(string msg,int erroCode);
+   int               ShowErro(string msg,int erroCode);
    void              ShowAlert(string msg);
    ENUM_ORDER_TYPE   CheckOpenTrade(void);// Verifica por condição de compra ou venda.      
 
@@ -148,6 +151,7 @@ Ea_2MAdxClass::Ea_2MAdxClass()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+/*
 Ea_2MAdxClass::~Ea_2MAdxClass()
   {
    IndicatorRelease(_MA_Manusear);   
@@ -155,22 +159,61 @@ Ea_2MAdxClass::~Ea_2MAdxClass()
    IndicatorRelease(_ADX_Manusear);
    //_clUtils.WriteFile("Teste");
   }
+  */
 //+------------------------------------------------------------------+
 
 //+------------------------------------------------------------------+ 
 //| Inicializar objetos                                              |
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::DoInit(int ma,int maLong)
-  {
-   _MA_Manusear     = iMA(_Simbolo,_Periodo,ma,0,_MetodoMA,PRICE_CLOSE);
-   _MALong_Manusear = iMA(_Simbolo,_Periodo,maLong,0,_MetodoMA,PRICE_CLOSE);
-   //_MACD_Manusear   = iMACD(_Simbolo,_Periodo,12,26,9,PRICE_CLOSE);
-   _ADX_Manusear    = iADX(_Simbolo,_Periodo,14);
+  {    
+   //--- resetting error code to zero
+   ResetLastError(); 
+     
+   _MALong_Manusear= iCustom(_Simbolo,_Periodo,"Custom_iMALong", maLong, _MetodoMA, PRICE_CLOSE);
+   _MA_Manusear    = iCustom(_Simbolo,_Periodo,"Custom_iMAShort", ma, _MetodoMA, PRICE_CLOSE);    
+   _ADX_Manusear   = iCustom(_Simbolo,_Periodo,"CustomADX",14); 
+
+   // _MA_Manusear     = iMA(_Simbolo,_Periodo,ma,0,_MetodoMA,PRICE_CLOSE);         
+   // _MALong_Manusear = iMA(_Simbolo,_Periodo,maLong,0,_MetodoMA,PRICE_CLOSE);
+   // _MACD_Manusear   = iMACD(_Simbolo,_Periodo,12,26,9,PRICE_CLOSE);   
+   // _ADX_Manusear    = iADX(_Simbolo,_Periodo,14);
+   
    cTrade.SetExpertMagicNumber(_NumeroMagico);
-   totalGains=0;totalLoss=0;totalCorretagem=0;totalProfit=0;valarTotalLoss=0;
-   primeiraSaida = false;
-   segundaSaida = false;
+   totalGains=0;totalLoss=0;totalCorretagem=0;totalProfit=0;valarTotalLoss=0;     
+   primeiraSaida = segundaSaida = false;
+   cchart.Attach(0);
+   
+   //if(!cchart.IndicatorAdd(0,_MACD_Manusear)) Print(" Falha ao adicionar Media móvel no chart");       
+   
+   if(!cchart.IndicatorAdd(0,_MALong_Manusear)) Print(" Falha ao adicionar Media móvel no chart"); 
+   if(!cchart.IndicatorAdd(0,_MA_Manusear)) Print("Falha ao adicionar Media móvel no chart"); 
+   if(!cchart.IndicatorAdd(1,_ADX_Manusear)) Print(" Falha ao adicionar ADX no chart"); 
   }
+//+------------------------------------------------------------------+
+//| Destrutor                                                        | 
+//+------------------------------------------------------------------+
+void Ea_2MAdxClass::DoUnit(void)
+{
+   
+   //cchart.IndicatorDelete(0,cchart.IndicatorName(0,1));
+   
+   cchart.IndicatorDelete(0,"EMA(17)");
+   cchart.IndicatorDelete(0,"ADX(14)");
+   cchart.IndicatorDelete(0,"EMA(72)");
+          
+   //Print("Nome Indicador: "+ cchart.IndicatorName(0,1)); 
+   //Print("Nome Indicador: "+ cchart.IndicatorName(0,2)); 
+   //Print("Nome Indicador: "+ cchart.IndicatorName(0,3));
+   
+   cchart.Detach();  
+     
+   IndicatorRelease(_MA_Manusear);   
+   IndicatorRelease(_MALong_Manusear);
+   IndicatorRelease(_ADX_Manusear);
+      
+   //_clUtils.WriteFile("Teste");
+}
 
 //+------------------------------------------------------------------+ 
 //| Retorna o tipo de entrada no Trade (Buy or Sell)                 | 
@@ -180,7 +223,11 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    if(_clUtils.IsNewDay()) GetInformation();
    
    GetBuffers();   
-
+   
+   bool IsCondition_1=false;
+   bool IsCondition_2=false;
+   bool IsCondition_3=false;
+   
    // Se debugando
    /*
    if ( MQL5InfoInteger(MQL5_DEBUGGING) )
@@ -194,41 +241,37 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    /* Se condição de compra.
       Se preço negociado acima da média móvel e barra anterior acima da média móvel.
    */
-   if(_MA_Valor[0] > _MALong_Valor[0] && latest_price.last > _MA_Valor[0] && mrate[1].high >_MA_Valor[1])   
+   IsCondition_1 = ( _MA_Valor[0] > _MALong_Valor[0] && latest_price.last > _MA_Valor[0] && mrate[1].high >_MA_Valor[1]);
+   IsCondition_2 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] > _MaiorDI[1] && 
+                      _MaiorDI[1] > _MaiorDI[2] && latest_price.last>mrate[1].high);
+   // Se negócio abaixo do preço de ajuste, não comprar
+   IsCondition_3 = ((_PrecoDeAjuste <= 0) || ( _PrecoDeAjuste > 0 && latest_price.last > _PrecoDeAjuste)) ; 
+                    
+   if( IsCondition_1 && IsCondition_2 && IsCondition_3)
    {
       if(GetPeriodo()==1)                 
-         if(!(mrate[1].high > mrate[2].high)) return(-1); // Se última barra fechada maior que penúltima barra
-        
-      // Se negócio abaixo do preço de ajuste, não comprar 
-      if(_PrecoDeAjuste > 0 && latest_price.last < _PrecoDeAjuste) return(-1);
-              
-      if(_ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&
-        _MaiorDI[0] > _MaiorDI[1] && _MaiorDI[1] > _MaiorDI[2] && 
-        latest_price.last>mrate[1].high) 
-      {            
-         if(_clUtils.IsNewBar(_Simbolo))                     
-            return(ORDER_TYPE_BUY);         
-      }
+         if(!(mrate[1].high > mrate[2].high)) return(-1); // Se última barra fechada maior que penúltima barra              
+       
+      if(_clUtils.IsNewBar(_Simbolo))                     
+            return(ORDER_TYPE_BUY);                        
    }
 
    /* Se condição de venda.
       Se preço abaixo da média móvel e barra anterior menor que a média móvel.
    */   
-   if(_MA_Valor[0] < _MALong_Valor[0] && latest_price.last < _MA_Valor[0] && mrate[1].low < _MA_Valor[1])   
+   IsCondition_1 = (_MA_Valor[0] < _MALong_Valor[0] && latest_price.last < _MA_Valor[0] && mrate[1].low < _MA_Valor[1]);
+   IsCondition_2 = (_ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MenorDI[0] > _MenorDI[1] && 
+                     _MenorDI[1] > _MenorDI[2] && latest_price.last<mrate[1].low);
+   // Se negócio acima do preço de ajuste, não vender                     
+   IsCondition_3 = ((_PrecoDeAjuste <= 0) || (_PrecoDeAjuste > 0 && latest_price.last < _PrecoDeAjuste));
+   
+   if(IsCondition_1 && IsCondition_2 && IsCondition_3 )
    {
       if(GetPeriodo()==1)                 
-         if(!(mrate[1].low < mrate[2].low)) return(-1); // Se última barra fechada maior que penúltima
-
-      // Se negócio acima do preço de ajuste, não vender
-      if(_PrecoDeAjuste > 0 && latest_price.last > _PrecoDeAjuste) return(-1);
-            
-      if(_ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&
-         _MenorDI[0] > _MenorDI[1] && _MenorDI[1] > _MenorDI[2] && 
-         latest_price.last<mrate[1].low)       
-      {                  
-         if(_clUtils.IsNewBar(_Simbolo))                   
-            return(ORDER_TYPE_SELL);
-      }        
+         if(!(mrate[1].low < mrate[2].low)) return(-1); // Se última barra fechada maior que penúltima      
+      
+      if(_clUtils.IsNewBar(_Simbolo))                   
+            return(ORDER_TYPE_SELL);                        
    }
 
    return(-1);
@@ -271,18 +314,21 @@ void Ea_2MAdxClass::GetBuffers(void)
 //+------------------------------------------------------------------+ 
 //| Exibir mensagens com código do erro.                             | 
 //+------------------------------------------------------------------+
-void Ea_2MAdxClass::ShowErro(string msg,int erroCode)
+int Ea_2MAdxClass::ShowErro(string msg,int erroCode)
   {
-   Alert(msg,"-erro: ",erroCode,"!!");
    ResetLastError();
+   if(erroCode != NULL)
+      Alert(msg,"-erro: ",erroCode,"!!");
+   else Alert(msg+"!!");  
+   return -1;   
   }
 //+------------------------------------------------------------------+ 
 //| Exibir apenas mensagem.                                          | 
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::ShowAlert(string msg)
   {
-   Alert(msg+"!!");
    ResetLastError();
+   Alert(msg+"!!");   
   }
 //+------------------------------------------------------------------+ 
 //| Abrir posição Trade.                                             | 

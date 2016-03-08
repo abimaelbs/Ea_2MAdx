@@ -47,6 +47,7 @@ private:
    bool              _UsarTralingStop; //Usar Trailing Stop
    double            _InicioTrailingStop;  //Início Trainling Stop
    double            _MudancaTrailingStop; // Mudança Trainling Stop 
+   bool              _UsarPrecoAjuste;     // Usar preço de ajuste pregão anterior
    double            _PrecoDeAjuste;       //Preço de Ajuste anterior
    //color             _CorLinhaAjuste;  // Preço de ajuste(Cor)
    double            _ValorCorretagem; // Valor da corretagem por operação
@@ -107,6 +108,7 @@ public:
    
    void SetBreakEven(double bv) {_BreakEvenVal=bv; }
    void SetTicksBreakEven(double tbv) {_TicksAcimaBreakEven=tbv; }
+   void SetUsarPrecoAjuste(bool pa) { _UsarPrecoAjuste=pa; }
    void SetPrecoDeAjuste(double aj) { _PrecoDeAjuste=aj; }
    void SetValorCorretagem(double corretagem) {_ValorCorretagem = corretagem; }
    void SetValorTaxaIBOV(double txIbov) { _ValorTaxaIBOV = txIbov; }
@@ -266,16 +268,19 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    //IsCondition_2 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] > _MaiorDI[1] &&  _MaiorDI[1] > _MaiorDI[2]);
    
    // Se negócio abaixo do preço de ajuste, não comprar
-   IsCondition_4 = ((_PrecoDeAjuste <= 0) || ( _PrecoDeAjuste > 0 && latest_price.last > _PrecoDeAjuste)) ; 
+   IsCondition_4 = ( latest_price.last > _PrecoDeAjuste) ; 
    
    // Se não houve engolfo
    IsCondition_5 = (mrate[0].low > mrate[1].low);
                     
-   if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4 && IsCondition_5)
+   if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_5)
    {
       if(GetPeriodo()==1)                 
          if(!(mrate[2].high > mrate[3].high)) return(-1); // Se última barra fechada maior que penúltima barra              
        
+      if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
+         if(!IsCondition_4) return(-1);
+             
       if(_clUtils.IsNewBar(_Simbolo))                     
             return(ORDER_TYPE_BUY);                        
    }
@@ -295,7 +300,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    //IsCondition_2 = (_ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MenorDI[0] > _MenorDI[1] && _MenorDI[1] > _MenorDI[2] && latest_price.last<mrate[1].low);
   
    // Se negócio acima do preço de ajuste, não vender                     
-   IsCondition_4 = ((_PrecoDeAjuste <= 0) || (_PrecoDeAjuste > 0 && latest_price.last < _PrecoDeAjuste));
+   IsCondition_4 = ( latest_price.last < _PrecoDeAjuste );
    
    // Se não houve engolfo
    IsCondition_5 = (mrate[0].high < mrate[1].high);
@@ -304,6 +309,9 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    {
       if(GetPeriodo()==1)                 
          if(!(mrate[2].low < mrate[3].low)) return(-1); // Se última barra fechada maior que penúltima      
+      
+      if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
+         if(!IsCondition_4) return(-1);
       
       if(_clUtils.IsNewBar(_Simbolo))                   
             return(ORDER_TYPE_SELL);                        
@@ -545,14 +553,16 @@ void Ea_2MAdxClass::GetInformation(void)
          PrintFormat("We couldn't select a deal, with the index %d. Error %d",i,GetLastError());
         }
      }
-               
-   Comment("TOTAL DE ORDENS: "+ (string)returns +
+      
+   string coment = "TOTAL DE ORDENS: "+ (string)returns +
            "\nGAIN=R$"+StringFormat("%.2f",profit) +
            "\nLOSS=R$"+StringFormat("%.2f",loss) +
            "\nCORRETAGEM=R$"+StringFormat("%.2f",totalCorretagem) +
            "\nTOTAL GAIN="+StringFormat("%d",totalGains) +
-           "\nTOTAL LOSS="+StringFormat("%d",totalLoss)                                     
-           );
+           "\nTOTAL LOSS="+StringFormat("%d",totalLoss);
+  if(_PrecoDeAjuste >0) coment += "\nP.AJUSTE=" + (string)(_UsarPrecoAjuste ? "Sim":"Não");
+                                               
+   Comment(coment);
 }
 
 void Ea_2MAdxClass::DesenharOBJ(double preco,long cor)

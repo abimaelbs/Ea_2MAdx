@@ -52,7 +52,8 @@ input int      MaximoStopGain=0; // Máximo total trade com Stop Gain
 input int      MaximoStopLoss=2; // Máximo total trade com Stop Loss
 
 input string   Sessao_06="===== Configuração Preço de Ajuste"; //Preço de Ajuste
-input double   PrecoAjuste = 0.0;   // Comprar/Vender no Preço de ajuste
+input eConfirmar UsarPrecoAjuste = false; // Comprar/Vender no Preço de ajuste 
+input double   PrecoAjuste = 0.0;   // Preço de Ajuste Pregão Anterior
 input color    CorLinhaAjuste = clrRoyalBlue; // Preço de ajuste(Cor)
 //input ENUM_OBJECT Objeto = OBJ_HLINE;
 input string   Sessao_07="===== Configuração Meta Diária"; //Meta diária
@@ -102,6 +103,7 @@ int OnInit()
    CExpert.SetUsarTralingStop(UsarTralingStop);
    CExpert.SetInicioTrailingStop(InicioTrailingStop);
    CExpert.SetMudancaTrailingStop(MudancaTrailing);
+   CExpert.SetUsarPrecoAjuste(UsarPrecoAjuste);
    CExpert.SetPrecoDeAjuste(PrecoAjuste);
    CExpert.SetValorCorretagem(ValorCorretagem);
    //CExpert.SetValorTaxaIBOV(ValorTaxas);

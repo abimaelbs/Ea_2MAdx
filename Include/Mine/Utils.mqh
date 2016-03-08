@@ -169,10 +169,12 @@ void Utils::BreakEven(string simbolo,int tpOrdem,double inicioBreakEven,double v
          double posisao_sl = PositionGetDouble(POSITION_SL);
          
          // Se loss maior ou igual ao preço de entrada 
-         if(PositionGetDouble(POSITION_SL) >= PositionGetDouble(POSITION_PRICE_OPEN )) return;
+         //if(PositionGetDouble(POSITION_SL) >= PositionGetDouble(POSITION_PRICE_OPEN )) return;
          
          if(tpOrdem==POSITION_TYPE_BUY) 
          {
+            if(posisao_sl >= PositionGetDouble(POSITION_PRICE_OPEN )) return;
+            
             if(precoRecente.last >= NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN)+inicioBreakEven,_Digits))
               {
                   new_sl=NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN)+valorAcimaEntrada,_Digits);               
@@ -182,6 +184,8 @@ void Utils::BreakEven(string simbolo,int tpOrdem,double inicioBreakEven,double v
            }
          else if(tpOrdem==POSITION_TYPE_SELL)
          {
+            if(posisao_sl<= PositionGetDouble(POSITION_PRICE_OPEN )) return;
+            
             if(precoRecente.last <= NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN)-inicioBreakEven,_Digits))
               {
                   new_sl=NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN)-valorAcimaEntrada,_Digits);               

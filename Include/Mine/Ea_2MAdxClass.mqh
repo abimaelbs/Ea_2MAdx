@@ -159,38 +159,59 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
   {    
    //--- resetting error code to zero
    ResetLastError(); 
-     
+       
    _MALong_Manusear= iCustom(_Simbolo,_Periodo,"Custom_iMALong", maLong, _MetodoMA, PRICE_CLOSE);
    _MA_Manusear    = iCustom(_Simbolo,_Periodo,"Custom_iMAShort", ma, _MetodoMA, PRICE_CLOSE);    
    _ADX_Manusear   = iCustom(_Simbolo,_Periodo,"CustomADX",14); 
    _ATR_Manusear   = iATR(_Simbolo,_Periodo,14);
 
-   // _MA_Manusear     = iMA(_Simbolo,_Periodo,ma,0,_MetodoMA,PRICE_CLOSE);         
-   // _MALong_Manusear = iMA(_Simbolo,_Periodo,maLong,0,_MetodoMA,PRICE_CLOSE);
+   //_MA_Manusear     = iMA(_Simbolo,_Periodo,ma,0,_MetodoMA,PRICE_CLOSE);         
+   //_MALong_Manusear = iMA(_Simbolo,_Periodo,maLong,0,_MetodoMA,PRICE_CLOSE);
    // _MACD_Manusear   = iMACD(_Simbolo,_Periodo,12,26,9,PRICE_CLOSE);   
    // _ADX_Manusear    = iADX(_Simbolo,_Periodo,14);
    
    cTrade.SetExpertMagicNumber(_NumeroMagico);
    totalGains=0;totalLoss=0;totalCorretagem=0;totalProfit=0;valarTotalLoss=0;     
    primeiraSaida = segundaSaida = false;
-   cchart.Attach(0);
+   //cchart.Attach(0);
    
+   int subwindow=(int)ChartGetInteger(0,CHART_WINDOWS_TOTAL);
+   PrintFormat("Adicionado indicador Moveg Average na janela do gráfico %d",subwindow);
+   //if(!ChartIndicatorAdd(0,subwindow,_MALong_Manusear)) 
+   if(!ChartIndicatorAdd(0,0,_MALong_Manusear)) 
+     { 
+      PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
+     }
+   if(!ChartIndicatorAdd(0,0,_MA_Manusear)) 
+     { 
+      PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
+     }
+    if(!ChartIndicatorAdd(0,1,_ADX_Manusear)) 
+     { 
+      PrintFormat("Falha para adicionar indicador ADX na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
+     }    
    //if(!cchart.IndicatorAdd(0,_MACD_Manusear)) Print(" Falha ao adicionar Media móvel no chart");       
    
-   if(!cchart.IndicatorAdd(0,_MALong_Manusear)) Print(" Falha ao adicionar Media móvel no chart"); 
-   if(!cchart.IndicatorAdd(0,_MA_Manusear)) Print("Falha ao adicionar Media móvel no chart"); 
-   if(!cchart.IndicatorAdd(1,_ADX_Manusear)) Print(" Falha ao adicionar ADX no chart");       
+   //if(!cchart.IndicatorAdd(0,_MALong_Manusear)) Print(" Falha ao adicionar Media móvel no chart"); 
+   //if(!cchart.IndicatorAdd(0,_MA_Manusear)) Print("Falha ao adicionar Media móvel no chart"); 
+   //if(!cchart.IndicatorAdd(1,_ADX_Manusear)) Print(" Falha ao adicionar ADX no chart");       
   }
 //+------------------------------------------------------------------+
 //| Destrutor                                                        | 
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::DoUnit(void)
 {   
-   //cchart.IndicatorDelete(0,cchart.IndicatorName(0,1));
+
+   int window=ChartWindowFind(); 
+      
+   //ChartIndicatorDelete(0,0,"EMA(17)");
+   //ChartIndicatorDelete(0,0,"EMA(72)");
+   //ChartIndicatorDelete(0,window,"ADX(14)");
    
-   cchart.IndicatorDelete(0,"EMA(17)");  
-   cchart.IndicatorDelete(0,"EMA(72)");
-   cchart.IndicatorDelete(1,"ADX(14)");   
+   //cchart.IndicatorDelete(0,cchart.IndicatorName(0,1));   
+   //cchart.IndicatorDelete(0,"EMA(17)");  
+   //cchart.IndicatorDelete(0,"EMA(72)");
+   //cchart.IndicatorDelete(1,"ADX(14)");   
           
    //Print("Nome Indicador: "+ cchart.IndicatorName(0,1)); 
    //Print("Nome Indicador: "+ cchart.IndicatorName(0,2)); 
@@ -200,7 +221,7 @@ void Ea_2MAdxClass::DoUnit(void)
    IndicatorRelease(_MALong_Manusear);
    IndicatorRelease(_ADX_Manusear);
    IndicatorRelease(_ATR_Manusear);
-   cchart.Detach(); 
+   //cchart.Detach(); 
    Comment("");
    //_clUtils.WriteFile("Teste");
 }

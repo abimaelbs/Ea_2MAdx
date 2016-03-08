@@ -1,11 +1,11 @@
 //+------------------------------------------------------------------+
 //|                                                     Ea_2MAdx.mq5 |
-//|                               Copyright 2015,  Abimael B. Silva. |
+//|                               Copyright 2016,  Abimael B. Silva. |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Abimael B. Silva."
-#property link      "https://www.mql5.com"
-#property version   "1.06"
+#property copyright "Copyright 2016, Abimael B. Silva."
+#property link      "abimael.bs@gmail.com"
+#property version   "1.07"
 #property description "Este EA é basedo em 2 Médias Móveis e um ADX, optimizado para WIN e WDO M1" // Description (line 1)
 #property description "Compra: Média Móvel de curto período deve estar acima da média de Longo período." 
 #property description "Preço acima da Média de curto período, entrada no rompimento e 2 candle" 
@@ -49,7 +49,7 @@ input double   MudancaTrailing=20;     // Valor mudança Trailing Stop
 
 input string   Sessao_05="===== Configuração Quant. Op. Gain e Loss"; //Total Operações
 input int      MaximoStopGain=0; // Máximo total trade com Stop Gain
-input int      MaximoStopLoss=4; // Máximo total trade com Stop Loss
+input int      MaximoStopLoss=2; // Máximo total trade com Stop Loss
 
 input string   Sessao_06="===== Configuração Preço de Ajuste"; //Preço de Ajuste
 input double   PrecoAjuste = 0.0;   // Comprar/Vender no Preço de ajuste
@@ -59,7 +59,7 @@ input string   Sessao_07="===== Configuração Meta Diária"; //Meta diária
 input eConfirmar UsarMetaDiaria=true;  //Usar Meta Diáia
 input double   ValorCorretagem = 2.00; // Valor corretagem (R$)
 //input double   ValorTaxas = 9.00;    // Valor taxa IBOV (R$)
-input double   TotalMeta = 60.00;      // Total meta (R$)
+input double   TotalMeta = 150.00;      // Total meta (R$)
 input eTipoMeta TipoMeta = Liquido;    // Total do valor (Liquido/Bruto)
 
 input string   Sessao_08="===== Configurações Indicadores"; //Indicadores

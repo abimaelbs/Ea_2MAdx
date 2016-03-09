@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, MetaQuotes Software Corp."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.08"
+#property version   "1.07"
 
 #include <Trade/Trade.mqh>
 #include <Mine/Utils.mqh>
@@ -22,6 +22,8 @@ double totalCorretagem,
        valarTotalLoss;
 bool   primeiraSaida,
        segundaSaida;
+       
+bool tocarSom = false;
 
 //+------------------------------------------------------------------+
 //|   Declaração                                                     |
@@ -423,7 +425,9 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
          sl = latest_price.bid-NormalizeDouble((_ATR_Valor[0] * 2.5),_Digits);      
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
-      cTrade.Buy(_Lote,_Simbolo,latest_price.bid,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra)");
+      if(!cTrade.Buy(_Lote,_Simbolo,latest_price.bid,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra)"))
+         _clUtils.PlaySoundByID(SOUND_ERROR);
+      else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
      }
    else if(typeOrder==ORDER_TYPE_SELL)
      {
@@ -439,7 +443,9 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
          sl = latest_price.ask+NormalizeDouble((_ATR_Valor[0] * 2.5),_Digits);
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
-      cTrade.Sell(_Lote,_Simbolo,latest_price.ask,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda)");
+      if(!cTrade.Sell(_Lote,_Simbolo,latest_price.ask,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda)"))
+         _clUtils.PlaySoundByID(SOUND_ERROR);
+      else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
      }
   }
 //+------------------------------------------------------------------+ 
@@ -502,6 +508,9 @@ void Ea_2MAdxClass::TrainlingStop(ENUM_POSITION_TYPE typeOrder)
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::GetInformation(void)
   {
+   //if(tocarSom) _clUtils.PlaySoundByID(SOUND_CLOSE_WITH_PROFIT);
+   tocarSom = true;   
+   //PlaySoundByID(SOUND_CLOSE_WITH_LOSS);
    string CurrDate=TimeToString(TimeCurrent(),TIME_DATE);
    HistorySelect(StringToTime(CurrDate),TimeCurrent());
    
@@ -515,7 +524,7 @@ void Ea_2MAdxClass::GetInformation(void)
    totalGains=0;
    totalLoss=0;
    valarTotalLoss=0;
-      
+         
    //--- scan through all of the deals in the history
    for(int i=0;i<deals;i++)
      {
@@ -543,7 +552,7 @@ void Ea_2MAdxClass::GetInformation(void)
             returns++;
             //--- result of fixation
             double result=HistoryDealGetDouble(deal_ticket,DEAL_PROFIT);
-
+                                  
             //--- input the positive results into the summarized profit
             if(result>0) 
               {

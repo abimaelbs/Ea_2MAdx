@@ -5,9 +5,24 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
-#property version   "1.3"
+#property version   "1.2"
 #include <Trade/Trade.mqh>
 #include <Mine/Enums.mqh>
+
+//--- Sound files
+#resource "\\Files\\Sounds\\AHOOGA.WAV"   // Error
+#resource "\\Files\\Sounds\\CASHREG.WAV"  // Position opening/position volume increase/pending order triggering
+#resource "\\Files\\Sounds\\WHOOSH.WAV"   // Pending order/Stop Loss/Take Profit setting/modification
+#resource "\\Files\\Sounds\\VERYGOOD.WAV" // Position closing at profit
+#resource "\\Files\\Sounds\\DRIVEBY.WAV"  // Position closing at loss
+//--- Sound file location
+string SoundError          = "::Files\\Sounds\\AHOOGA.WAV";
+string SoundOpenPosition   = "::Files\\Sounds\\CASHREG.WAV";
+string SoundAdjustOrder    = "::Files\\Sounds\\WHOOSH.WAV";
+string SoundCloseWithProfit= "::Files\\Sounds\\VERYGOOD.WAV";
+string SoundCloseWithLoss  = "::Files\\Sounds\\DRIVEBY.WAV";
+
+sinput bool       UseSound     =true; // Sound notifications
 
 class Utils
   {
@@ -44,6 +59,7 @@ public:
                      double loteSaida /*Valor acima da entrada*/,
                      double valorSaida);
                      
+   void PlaySoundByID(int id);                  
    void WriteFile(string texto="");                     
   };
 
@@ -415,7 +431,28 @@ bool Utils::IsNewDay(void)
      }
      
    return(false);
-}//+------------------------------------------------------------------+
+}
+
+//+------------------------------------------------------------------+
+//| Tocar sons                                                       |
+//+------------------------------------------------------------------+
+void Utils::PlaySoundByID(int id)
+{
+  if(UseSound)
+  {
+   //--- Play the sound based on the identifier passed
+   switch(id)
+     {
+      case SOUND_ERROR              : PlaySound(SoundError);            break;
+      case SOUND_OPEN_POSITION      : PlaySound(SoundOpenPosition);     break;
+      case SOUND_ADJUST_ORDER       : PlaySound(SoundAdjustOrder);      break;
+      case SOUND_CLOSE_WITH_PROFIT  : PlaySound(SoundCloseWithProfit);  break;
+      case SOUND_CLOSE_WITH_LOSS    : PlaySound(SoundCloseWithLoss);    break;
+     }
+  }
+}
+
+//+------------------------------------------------------------------+
 //| Save data to file                                                |
 //+------------------------------------------------------------------+
 void Utils::WriteFile(string texto="")

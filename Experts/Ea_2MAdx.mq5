@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Abimael B. Silva."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.08"
+#property version   "1.07"
 #property description "Este EA é basedo em 2 Médias Móveis e um ADX, optimizado para WIN e WDO M1" // Description (line 1)
 #property description "Compra: Média Móvel de curto período deve estar acima da média de Longo período." 
 #property description "Preço acima da Média de curto período, entrada no rompimento e 2 candle" 

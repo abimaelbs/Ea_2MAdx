@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
-#property version   "1.2"
+#property version   "1.3"
 #include <Trade/Trade.mqh>
 #include <Mine/Enums.mqh>
 
@@ -26,6 +26,7 @@ public:
                      double totalCorretagemAtual /*Valor total corretagem do já excutado no dia*/,
                      double qtdLote /*Quantidade de lotes na operação*/);
    bool ValidarHoraEntrada(string horaInicio, string horaFim);
+   bool ValidarHoraWait(string horaInicio, string horaFim);
    bool ValidarHoraSaida(string horaFinal);
    bool IsNewBar(string simbolo);
    bool IsNewDay();
@@ -238,10 +239,64 @@ double precoCorretagem, double totalCorretagemAtual,double qtdLote)
 //+------------------------------------------------------------------+
 bool Utils::ValidarHoraEntrada(string horaInicio,string horaFim)
 {
-   MqlDateTime dt_struct;
-   TimeToStruct(TimeCurrent(),dt_struct);
-   
+   //MqlDateTime dt_struct;
+   //TimeToStruct(TimeCurrent(),dt_struct);   
  if(horaInicio!="")
+  {
+   // Validar hora digitada   
+   string aDelimiter=":";
+   int tDelimiterLength=StringLen(aDelimiter);
+   int tPos1 = 0;
+   int tPos2 = StringFind(horaInicio,aDelimiter,0);
+
+   string vHoraInicio  ="";
+   string vMinutoInicio="";
+
+   string vHoraFim    = "";
+   string vMinutoFim  = "";
+
+   if(tPos2>-1)
+     {
+      vHoraInicio=StringSubstr(horaInicio,tPos1,tPos2-tPos1);
+      tPos1=tPos2+tDelimiterLength;
+      vMinutoInicio=StringSubstr(horaInicio,tPos1,tPos2-tPos1);
+
+      tPos1 = 0;
+      tPos2 = StringFind(horaFim,aDelimiter,tPos1);
+      vHoraFim=StringSubstr(horaFim,tPos1,tPos2-tPos1);
+      tPos1=tPos2+tDelimiterLength;
+      vMinutoFim=StringSubstr(horaFim,tPos1,tPos2-tPos1);
+     }
+   else
+      return(false);
+
+   datetime tm= TimeCurrent();
+   datetime vtmIni=StringToTime(vHoraInicio+":"+vMinutoInicio);
+   datetime vtmFim=StringToTime(vHoraFim+":"+vMinutoFim);
+         
+   if(tm >= vtmIni && tm < vtmFim)
+      return true;
+
+   /*
+      if(dt_struct.hour>=StringToInteger(vHoraInicio) && dt_struct.min>=StringToInteger(vMinutoInicio))
+        {
+         if(horaFim!="")
+            if(dt_struct.hour>=StringToInteger(vHoraFim) && dt_struct.min>=StringToInteger(vMinutoFim))
+               return(false);
+        }
+      else
+         return(false);*/
+   } 
+
+   return(false);
+}
+
+//+------------------------------------------------------------------+
+//|  Validar Horário de não operar                                   |
+//+------------------------------------------------------------------+
+bool Utils::ValidarHoraWait(string horaInicio,string horaFim)
+{      
+ if(horaInicio!="" && horaFim != "")
   {
    // Validar hora digitada   
    string aDelimiter=":";
@@ -269,20 +324,17 @@ bool Utils::ValidarHoraEntrada(string horaInicio,string horaFim)
      }
    else
       return(false);
-
-   if(dt_struct.hour>=StringToInteger(vHoraInicio) && dt_struct.min>=StringToInteger(vMinutoInicio))
-     {
-      if(horaFim!="")
-         if(dt_struct.hour>=StringToInteger(vHoraFim) && dt_struct.min>=StringToInteger(vMinutoFim))
-            return(false);
-     }
-   else
-      return(false);
+      
+   datetime tm= TimeCurrent();
+   datetime vtmIni=StringToTime(vHoraInicio+":"+vMinutoInicio);
+   datetime vtmFim=StringToTime(vHoraFim+":"+vMinutoFim);
+         
+   if(tm >= vtmIni && tm < vtmFim)
+      return true;      
   }
-
-   return(true);
+  
+  return false;
 }
-
 //+------------------------------------------------------------------+
 //|  Validar Horário de saida, retorna true se hora válida           |
 //+------------------------------------------------------------------+

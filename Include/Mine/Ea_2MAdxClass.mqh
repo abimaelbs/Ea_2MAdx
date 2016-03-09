@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, MetaQuotes Software Corp."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.07"
+#property version   "1.08"
 
 #include <Trade/Trade.mqh>
 #include <Mine/Utils.mqh>
@@ -66,7 +66,9 @@ private:
    int               _ATR_Manusear;   // Stop ATR
    double            _ATR_Valor[];    // Valor ATR
    string            _HoraInicio;     // Usar controle de horas para entrada na operação
-   string            _HoraFim;        // Usar controle de horas para saída na operação      
+   string            _HoraFim;        // Usar controle de horas para saída na operação  
+   string            _WaitHoraInicio; // Inicio de Horário de não operar
+   string            _WaitHoraFim;    // Fim de Horário de não operar
    int               _NumeroMagico;   // Código do Expert Advisor.      
    MqlTick           latest_price;    // To be used for gettinf recent/latest price quotes
    MqlTradeRequest   _Request;        // Estrutura usada para enviar do Trade.
@@ -121,7 +123,9 @@ public:
    void SetSimbolo(string simbolo) { _Simbolo=simbolo; }
    void SetPeriodo(ENUM_TIMEFRAMES periodo) { _Periodo=periodo; }
    void SetHoraInico(string hora) { _HoraInicio=hora; }
-   void SetHoraFim(string hora) { _HoraFim=hora; }
+   void SetHoraFim(string hora) { _HoraFim=hora; }   
+   void SetWaitHoraInico(string wi) {_WaitHoraInicio=wi;}
+   void SetWaitHoraFim(string wf) {_WaitHoraFim=wf; }   
    void SetNumeroMagico(int numero){ _NumeroMagico=numero; }
    void SetMetodoMA(ENUM_MA_METHOD mt) { _MetodoMA=mt; }
    void SetMaxGain(int gain){ _TotalGain=gain; }
@@ -208,7 +212,8 @@ void Ea_2MAdxClass::DoUnit(void)
       
    //ChartIndicatorDelete(0,0,"EMA(17)");
    //ChartIndicatorDelete(0,0,"EMA(72)");
-   //ChartIndicatorDelete(0,window,"ADX(14)");
+   //ChartIndicatorDelete(0,1,"ADX(14)");
+   //ChartRedraw(0);
    
    //cchart.IndicatorDelete(0,cchart.IndicatorName(0,1));   
    //cchart.IndicatorDelete(0,"EMA(17)");  
@@ -222,9 +227,9 @@ void Ea_2MAdxClass::DoUnit(void)
    IndicatorRelease(_MA_Manusear);   
    IndicatorRelease(_MALong_Manusear);
    IndicatorRelease(_ADX_Manusear);
-   IndicatorRelease(_ATR_Manusear);
+   IndicatorRelease(_ATR_Manusear);  
    //cchart.Detach(); 
-   Comment("");
+   Comment("");   
    //_clUtils.WriteFile("Teste");
 }
 
@@ -234,6 +239,15 @@ void Ea_2MAdxClass::DoUnit(void)
 ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
   {      
    if(_clUtils.IsNewDay()) GetInformation();
+   
+   if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim)) return(-1);
+   
+   if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) return(-1);
+   
+   // Se já alcançou meta diária, não opera mais   
+   if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return(-1);
+     
+   if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return(-1);
    
    GetBuffers();   
    
@@ -381,16 +395,16 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
   {      
    //if(_clUtils.IsNewDay()) GetInformation();
    
-   if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim)) return;
+   //if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim)) return;
       
    // Se já alcançou meta diária, não opera mais   
-   if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return;
+   //if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return;
      
-   if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return;
+   //if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return;
    
-   primeiraSaida = segundaSaida = false;   
+   //primeiraSaida = segundaSaida = false;   
       
-   GetBuffers();
+   //GetBuffers();
       
    double sl = 0.00;
    double tp = 0.00;

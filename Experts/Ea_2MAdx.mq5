@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Abimael B. Silva."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.07"
+#property version   "1.08"
 #property description "Este EA é basedo em 2 Médias Móveis e um ADX, optimizado para WIN e WDO M1" // Description (line 1)
 #property description "Compra: Média Móvel de curto período deve estar acima da média de Longo período." 
 #property description "Preço acima da Média de curto período, entrada no rompimento e 2 candle" 
@@ -73,6 +73,11 @@ input eConfirmar UsarStopATR = false;  // Usar Stop ATR
 input string   Sessao_09="===== Configuração Horário Trade"; //Horário
 input string   HoraInicio = "09:10"; // Hora Início do Trader
 input string   HoraFim    = "17:55"; // Hora Fim do Trader
+
+input string   Sessao_11="===== Config. Horário De Não Operar"; // Horário De Não Operar
+input string   WaitHoraInicio = "12:10"; // Hora Início de Aguardar
+input string   WaitHoraFim    = "13:10"; // Hora Fim de Aguardar
+
 input string   Sessao_10="===== Configuração Identificador EA"; //ID
 input int      EA_Magico=12345; // Identificador EA
 
@@ -97,6 +102,8 @@ int OnInit()
    CExpert.SetUsarBreakEven(UsarBreakEven);
    CExpert.SetBreakEven(BreakEven);
    CExpert.SetMetodoMA(MetodoMM);
+   CExpert.SetWaitHoraInico(WaitHoraInicio);
+   CExpert.SetWaitHoraFim(WaitHoraFim);
    CExpert.SetTicksBreakEven(PontosAcimaEntrada);
    CExpert.SetHoraInico(HoraInicio);
    CExpert.SetHoraFim(HoraFim);
@@ -120,6 +127,9 @@ int OnInit()
    
    CExpert.DoInit(MA_Periodo,MALong_Periodo);
    
+   if(WaitHoraInicio != "" && WaitHoraFim =="")
+    return CExpert.ShowErro("Informe a hora final de não abrir Operação",NULL);
+      
    if((UsarSaidaParcial && LoteSaidaParcial_1 > Lote) || (UsarSaidaParcial && LoteSaidaParcial_2 > Lote) )   
       return CExpert.ShowErro("Lote saida parcial não deve ser maior que Lote do Trade",NULL);   
    
@@ -159,8 +169,9 @@ void OnTick()
       ENUM_ORDER_TYPE typeOrder=CExpert.CheckOpenTrade();
 
       if(typeOrder==ORDER_TYPE_BUY || typeOrder==ORDER_TYPE_SELL) 
-      {
+      {         
          CExpert.AbrirPosicao(typeOrder);
+         primeiraSaida = segundaSaida = false;
       }
      }
    else

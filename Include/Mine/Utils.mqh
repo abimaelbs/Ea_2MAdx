@@ -460,11 +460,12 @@ void Utils::WriteFile(string texto="")
    //--- open the file
    ResetLastError();      
    int han=FileOpen(MQL5InfoString(MQL5_PROGRAM_NAME)+".txt",FILE_WRITE|FILE_TXT|FILE_ANSI," ");
+   
    //--- check if the file has been opened
    if(han!=INVALID_HANDLE)
      {
-      FileWrite(han,texto); // ?????? ??????
-      FileClose(han);       // ???????? ?????
+      FileWrite(han,texto); 
+      FileClose(han);
      }
    else
       Print("Falha ao abrir arquivo "+MQL5InfoString(MQL5_PROGRAM_NAME)+".txt, error",GetLastError());

@@ -334,7 +334,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    // Se não houve engolfo
    IsCondition_5 = (mrate[0].high < mrate[1].high);
    
-   if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4 && IsCondition_5)
+   if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_5)
    {
       if(GetPeriodo()==1)                 
          if(!(mrate[2].low < mrate[3].low)) return(-1); // Se última barra fechada maior que penúltima      

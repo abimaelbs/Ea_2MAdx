@@ -85,7 +85,6 @@ input int      EA_Magico=12345; // Identificador EA
 // Criando objeto da classe
 CPositionInfo cPos;
 Ea_2MAdxClass CExpert;
-Utils         cUtil;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -122,6 +121,7 @@ int OnInit()
    CExpert.SetUsarStopATR(UsarStopATR);
    
    CExpert.SetTamanhoMaxCadle(200.0); // Tamanho máximo do candle anterior
+   CExpert.SetUsarSom(UsarSom);
    
    CExpert.SetUsarSaidaParcial(UsarSaidaParcial);
    CExpert.SetLoteSaidaParcial_1(LoteSaidaParcial_1);
@@ -196,8 +196,7 @@ void OnTick()
 //| Expert Checar Gains e Loss                                       |
 //+------------------------------------------------------------------+
 void OnTrade()
-  {
+  {   
    CExpert.GetInformation();
-   cUtil.PlaySoundByID(SOUND_OPEN_POSITION,UsarSom);
   }
 //+------------------------------------------------------------------+

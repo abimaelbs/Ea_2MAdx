@@ -464,5 +464,3 @@ void Utils::WriteFile(string texto="")
    else
       Print("Falha ao abrir arquivo "+MQL5InfoString(MQL5_PROGRAM_NAME)+".txt, error",GetLastError());
   }
-
-

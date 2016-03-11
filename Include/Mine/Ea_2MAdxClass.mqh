@@ -16,7 +16,10 @@
 CTrade cTrade;
 
 int   totalGains,
-      totalLoss;
+      totalLoss,     
+       auxLoss,
+       auxGain,       
+       auxOrdem;
 double totalCorretagem,
        totalProfit,
        valarTotalLoss;
@@ -38,6 +41,7 @@ private:
    bool              _UsarStopATR;    // Usar Stop ATR, configuraçõa automáotica de stop
    
    double            _TamanhoMaxCadle;// Tamanho máximo do último candle
+   bool              _UsarSom;        // Usar som
    
    bool              _UsarSaidaParcial; //  Saida Parcial
    double            _LoteSaidaParcial_1;// Quantidade de lote na saida parcial
@@ -135,6 +139,7 @@ public:
    void SetMetodoMA(ENUM_MA_METHOD mt) { _MetodoMA=mt; }
    void SetMaxGain(int gain){ _TotalGain=gain; }
    void SetMaxLoss(int loss) { _TotalLoss=loss; }
+   void SetUsarSom(bool isSom) {_UsarSom =isSom; }
 
    /* Métodos Públicos */
    bool              CheckCloseTrade();
@@ -161,6 +166,9 @@ Ea_2MAdxClass::Ea_2MAdxClass()
    ZeroMemory(_MenorDI);
    ZeroMemory(_Request);
    ZeroMemory(_Result);   
+   auxLoss=0;
+   totalGains=0;
+   auxOrdem=0;
   }
 
 //+------------------------------------------------------------------+ 
@@ -443,18 +451,16 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
          tp= NormalizeDouble(latest_price.bid + (_TakeProfit*_Point)*10,_Digits);
       else if(_TakeProfit>0) tp=latest_price.bid+NormalizeDouble(_TakeProfit,_Digits);
       
-      //Comment((string)NormalizeDouble(round((int)(_ATR_Valor[0] * 2.5)),_Digits));
-      
-      Comment((string)NormalizeDouble(MathRound((int)_ATR_Valor[0]),_Digits));
+      //Comment((string)NormalizeDouble(round((int)(_ATR_Valor[0] * 2.5)),_Digits));      
+      //Comment((string)NormalizeDouble(MathRound((int)_ATR_Valor[0]),_Digits));
       
       if(_UsarStopATR)               
-         sl = latest_price.bid-NormalizeDouble(MathAbs((int)(_ATR_Valor[0] * 2.5) ),_Digits);      
-      
+         sl = latest_price.bid-NormalizeDouble(MathAbs((int)(_ATR_Valor[0] * 2.5) ),_Digits);
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       if(!cTrade.Buy(_Lote,_Simbolo,latest_price.bid,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra)"))
-         _clUtils.PlaySoundByID(SOUND_ERROR);
-      //else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
+         _clUtils.PlaySoundByID(SOUND_ERROR, _UsarSom);
+      else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION, _UsarSom );
      }
    else if(typeOrder==ORDER_TYPE_SELL)
      {
@@ -471,8 +477,8 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       if(!cTrade.Sell(_Lote,_Simbolo,latest_price.ask,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda)"))
-         _clUtils.PlaySoundByID(SOUND_ERROR);
-      //else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
+         _clUtils.PlaySoundByID(SOUND_ERROR, _UsarSom);
+      else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION, _UsarSom);
      }
   }
 //+------------------------------------------------------------------+ 
@@ -534,10 +540,8 @@ void Ea_2MAdxClass::TrainlingStop(ENUM_POSITION_TYPE typeOrder)
 //| Retorna informações na tela sobre os trades                      | 
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::GetInformation(void)
-  {
-   //if(tocarSom) _clUtils.PlaySoundByID(SOUND_CLOSE_WITH_PROFIT);
-   tocarSom = true;   
-   //PlaySoundByID(SOUND_CLOSE_WITH_LOSS);
+  {   
+   auxLoss= totalLoss;auxGain=totalGains;
    string CurrDate=TimeToString(TimeCurrent(),TIME_DATE);
    HistorySelect(StringToTime(CurrDate),TimeCurrent());
    
@@ -627,6 +631,11 @@ void Ea_2MAdxClass::GetInformation(void)
           comment += "\nSTOP ATR=" + (string)(_UsarStopATR ? "Sim":"Não");
                                        
    Comment(comment);
+         
+   if(auxOrdem > 0 && auxOrdem != returns )    
+      _clUtils.PlaySoundByID(SOUND_OPEN_POSITION,_UsarSom); 
+         
+   auxOrdem = returns;  
 }
 
 void Ea_2MAdxClass::DesenharOBJ(double preco,long cor)

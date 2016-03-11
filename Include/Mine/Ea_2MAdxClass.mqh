@@ -37,6 +37,8 @@ private:
    bool              _UsarBreakEven;  // Usar breakeven
    bool              _UsarStopATR;    // Usar Stop ATR, configuraçõa automáotica de stop
    
+   double            _TamanhoMaxCadle;// Tamanho máximo do último candle
+   
    bool              _UsarSaidaParcial; //  Saida Parcial
    double            _LoteSaidaParcial_1;// Quantidade de lote na saida parcial
    double            _ValorSaidaParcial_1;// Valor em pontos para saida parcial
@@ -102,6 +104,8 @@ public:
    void SetStopLoss(double sl) {  _StopLoss=sl; }
    void SetUsarBreakEven(bool bk) { _UsarBreakEven = bk; }
    void SetUsarStopATR(bool atr) { _UsarStopATR = atr; }
+   
+   void SetTamanhoMaxCadle(double mt) {_TamanhoMaxCadle = mt; }
    
    void SetUsarSaidaParcial(bool sa) { _UsarSaidaParcial = sa; }
    void SetLoteSaidaParcial_1(double sp) { _LoteSaidaParcial_1 = sp; }
@@ -179,38 +183,17 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    
    cTrade.SetExpertMagicNumber(_NumeroMagico);
    totalGains=0;totalLoss=0;totalCorretagem=0;totalProfit=0;valarTotalLoss=0;     
-   primeiraSaida = segundaSaida = false;
-   //cchart.Attach(0);
-   
-   
-   //--- Link the HistogramBuffer array to the indicator buffer 
-   //SetIndexBuffer(0,HistogramBuffer,INDICATOR_DATA); 
-   //--- Construct a short indicator name based on input parameters 
-   //shortname=StringFormat("Demo_ChartIndicatorDelete(%d,%d,%d)", 1,2,3); 
-   //IndicatorSetString(INDICATOR_SHORTNAME,shortname);
-   
+   primeiraSaida = segundaSaida = false;         
       
-   int subwindow=(int)ChartGetInteger(0,CHART_WINDOWS_TOTAL);
-   //PrintFormat("Adicionado indicador Moveg Average na janela do gráfico %d",subwindow);
-   //if(!ChartIndicatorAdd(0,subwindow,_MALong_Manusear)) 
-   
-   if(!ChartIndicatorAdd(0,0,_MALong_Manusear)) 
-     { 
+   int subwindow=(int)ChartGetInteger(0,CHART_WINDOWS_TOTAL);      
+   if(!ChartIndicatorAdd(0,0,_MALong_Manusear))       
       PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
-     }
-   if(!ChartIndicatorAdd(0,0,_MA_Manusear)) 
-     { 
-      PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
-     }
-    if(!ChartIndicatorAdd(0,1,_ADX_Manusear)) 
-     { 
-      PrintFormat("Falha para adicionar indicador ADX na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
-     }    
      
-   //if(!cchart.IndicatorAdd(0,_MACD_Manusear)) Print(" Falha ao adicionar Media móvel no chart");          
-   //if(!cchart.IndicatorAdd(0,_MALong_Manusear)) Print(" Falha ao adicionar Media móvel no chart"); 
-   //if(!cchart.IndicatorAdd(0,_MA_Manusear)) Print("Falha ao adicionar Media móvel no chart"); 
-   //if(!cchart.IndicatorAdd(1,_ADX_Manusear)) Print(" Falha ao adicionar ADX no chart");       
+   if(!ChartIndicatorAdd(0,0,_MA_Manusear))       
+      PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
+     
+    if(!ChartIndicatorAdd(0,1,_ADX_Manusear))       
+      PrintFormat("Falha para adicionar indicador ADX na janela do gráfico %d. Código de erro %d", subwindow,GetLastError());                  
   }
 //+------------------------------------------------------------------+
 //| Destrutor                                                        | 
@@ -235,6 +218,7 @@ void Ea_2MAdxClass::DoUnit(void)
    IndicatorRelease(_MALong_Manusear);
    IndicatorRelease(_ADX_Manusear);
    IndicatorRelease(_ATR_Manusear);
+   
    Comment("");
    
    datetime tm= TimeCurrent();
@@ -244,8 +228,7 @@ void Ea_2MAdxClass::DoUnit(void)
                 " | Corretagem:R$" + (string)totalCorretagem +
                 " | Perca:R$ " + (string)valarTotalLoss;
       
-   _clUtils.WriteFile(relatorio);  
-      
+   _clUtils.WriteFile(relatorio);   
 }
 
 //+------------------------------------------------------------------+ 
@@ -287,28 +270,27 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    */
    // Médias
    IsCondition_1 = ( _MAShort_Valor[0] > _MALong_Valor[0] );
+   
    // Último e penúltimo negócios acima da média de curto período
    IsCondition_2 = ( latest_price.last > _MAShort_Valor[0] && mrate[1].high > _MAShort_Valor[1] && 
-                     latest_price.last > mrate[1].high && mrate[1].high > mrate[2].high );   
+                     latest_price.last > mrate[1].high && mrate[1].high > mrate[2].high ); 
+                       
    // ADX maior que valor mínimo e +DI acima de -DI
-   IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&  _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1]);
+   IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&  _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1]);      
+         
+   // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
+   IsCondition_4 = (mrate[0].low > mrate[1].low && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
    
-   //IsCondition_1 = ( _MAShort_Valor[0] > _MALong_Valor[0] && latest_price.last > _MAShort_Valor[0] && mrate[1].high >_MAShort_Valor[1]);
-   //IsCondition_2 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] > _MaiorDI[1] &&  _MaiorDI[1] > _MaiorDI[2]);
-   
-   // Se negócio abaixo do preço de ajuste, não comprar
-   IsCondition_4 = ( latest_price.last > _PrecoDeAjuste) ; 
-   
-   // Se não houve engolfo
-   IsCondition_5 = (mrate[0].low > mrate[1].low);
+    // Se negócio abaixo do preço de ajuste, não comprar
+   IsCondition_5 = ( latest_price.last > _PrecoDeAjuste);
                     
-   if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_5)
+   if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
    {
       if(GetPeriodo()==1)                 
          if(!(mrate[2].high > mrate[3].high)) return(-1); // Se última barra fechada maior que penúltima barra              
        
       if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
-         if(!IsCondition_4) return(-1);
+         if(!IsCondition_5) return(-1);
              
       if(_clUtils.IsNewBar(_Simbolo))                     
             return(ORDER_TYPE_BUY);                        
@@ -319,28 +301,27 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
    */
    // Médias
    IsCondition_1 = ( _MAShort_Valor[0] < _MALong_Valor[0]);
+   
    // Último e penúltimo negócios abaixo da média de curto período
    IsCondition_2 = ( latest_price.last < _MAShort_Valor[0] && mrate[1].low < _MAShort_Valor[1] && 
-                     latest_price.last < mrate[1].low && mrate[1].low < mrate[2].low);   
+                     latest_price.last < mrate[1].low && mrate[1].low < mrate[2].low); 
+                       
    // ADX maior que valor mínimo e +DI acima de -DI
-   IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] < _MenorDI[0] && _MenorDI[0] > _MenorDI[1]);
-                  
-   //IsCondition_1 = (_MAShort_Valor[0] < _MALong_Valor[0] && latest_price.last < _MAShort_Valor[0] && mrate[1].low < _MAShort_Valor[1]);
-   //IsCondition_2 = (_ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MenorDI[0] > _MenorDI[1] && _MenorDI[1] > _MenorDI[2] && latest_price.last<mrate[1].low);
-  
+   IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] < _MenorDI[0] && _MenorDI[0] > _MenorDI[1]);                     
+        
+   // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
+   IsCondition_4 = (mrate[0].high < mrate[1].high && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
+   
    // Se negócio acima do preço de ajuste, não vender                     
-   IsCondition_4 = ( latest_price.last < _PrecoDeAjuste );
+   IsCondition_5 = ( latest_price.last < _PrecoDeAjuste );
    
-   // Se não houve engolfo
-   IsCondition_5 = (mrate[0].high < mrate[1].high);
-   
-   if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_5)
+   if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
    {
       if(GetPeriodo()==1)                 
          if(!(mrate[2].low < mrate[3].low)) return(-1); // Se última barra fechada maior que penúltima      
       
       if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
-         if(!IsCondition_4) return(-1);
+         if(!IsCondition_5) return(-1);
       
       if(_clUtils.IsNewBar(_Simbolo))                   
             return(ORDER_TYPE_SELL);                        
@@ -374,9 +355,7 @@ void Ea_2MAdxClass::GetBuffers(void)
       CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0 || 
       CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0 || 
       CopyBuffer(_MALong_Manusear,0,0,3,_MALong_Valor) < 0 ||
-      CopyBuffer(_ATR_Manusear,0,0,3,_ATR_Valor)<0     
-      )
-      ShowErro("Erro ao copiar Buffers dos indicadores",GetLastError());
+      CopyBuffer(_ATR_Manusear,0,0,3,_ATR_Valor)<0) ShowErro("Erro ao copiar Buffers dos indicadores",GetLastError());
 
    if(CopyRates(_Simbolo,_Periodo,0,4,mrate)<0)
       ShowErro("Error ao copiar dados da cotação do histórico",GetLastError());
@@ -389,11 +368,10 @@ void Ea_2MAdxClass::GetBuffers(void)
 //+------------------------------------------------------------------+
 int Ea_2MAdxClass::ShowErro(string msg,int erroCode)
   {
-   ResetLastError();
-   if(erroCode != NULL)
-      Alert(msg,"-erro: ",erroCode,"!!");
-   else Alert(msg+"!!");  
-   return -1;   
+      ResetLastError();
+      if(erroCode != NULL) Alert(msg,"-erro: ",erroCode,"!!");
+      else Alert(msg+"!!");  
+      return -1;   
   }
 //+------------------------------------------------------------------+ 
 //| Exibir apenas mensagem.                                          | 
@@ -407,20 +385,7 @@ void Ea_2MAdxClass::ShowAlert(string msg)
 //| Abrir posição Trade.                                             | 
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
-  {      
-   //if(_clUtils.IsNewDay()) GetInformation();
-   
-   //if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim)) return;
-      
-   // Se já alcançou meta diária, não opera mais   
-   //if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return;
-     
-   //if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return;
-   
-   //primeiraSaida = segundaSaida = false;   
-      
-   //GetBuffers();
-      
+  {         
    double sl = 0.00;
    double tp = 0.00;
 
@@ -434,8 +399,13 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
          tp= NormalizeDouble(latest_price.bid + (_TakeProfit*_Point)*10,_Digits);
       else if(_TakeProfit>0) tp=latest_price.bid+NormalizeDouble(_TakeProfit,_Digits);
       
+      //Comment((string)NormalizeDouble(round((int)(_ATR_Valor[0] * 2.5)),_Digits));
+      
+      Comment((string)NormalizeDouble(MathRound((int)_ATR_Valor[0]),_Digits));
+      
       if(_UsarStopATR)               
-         sl = latest_price.bid-NormalizeDouble((_ATR_Valor[0] * 2.5),_Digits);      
+         sl = latest_price.bid-NormalizeDouble(MathAbs((int)(_ATR_Valor[0] * 2.5) ),_Digits);      
+      
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       if(!cTrade.Buy(_Lote,_Simbolo,latest_price.bid,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra)"))
@@ -453,7 +423,7 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
       else if(_TakeProfit>0) tp=latest_price.ask-NormalizeDouble(_TakeProfit,_Digits);
       
       if(_UsarStopATR)               
-         sl = latest_price.ask+NormalizeDouble((_ATR_Valor[0] * 2.5),_Digits);
+         sl = latest_price.ask+NormalizeDouble(MathRound((int)(_ATR_Valor[0] * 2.5)),_Digits);
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       if(!cTrade.Sell(_Lote,_Simbolo,latest_price.ask,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda)"))
@@ -590,20 +560,32 @@ void Ea_2MAdxClass::GetInformation(void)
         }
      }
       
-   string coment = "TOTAL DE ORDENS: "+ (string)returns +
-           "\nGAIN=R$"+StringFormat("%.2f",profit) +
-           "\nLOSS=R$"+StringFormat("%.2f",loss) +
-           "\nCORRETAGEM=R$"+StringFormat("%.2f",totalCorretagem) +
-           "\nTOTAL GAIN="+StringFormat("%d",totalGains) +
-           "\nTOTAL LOSS="+StringFormat("%d",totalLoss);
-  if(_PrecoDeAjuste >0) coment += "\nP.AJUSTE=" + (string)(_UsarPrecoAjuste ? "Sim":"Não");
-                                               
-   Comment(coment);
+   string comment  = "T.ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote;
+          comment += "\nGAIN=R$"+StringFormat("%.2f",profit);
+          comment += "\nLOSS=R$"+StringFormat("%.2f",loss);
+          comment += "\nCORRETAGEM=R$"+StringFormat("%.2f",totalCorretagem);
+          comment += "\nTOTAL GAIN="+StringFormat("%d",totalGains);
+          comment += "\nTOTAL LOSS="+StringFormat("%d",totalLoss);
+  if(_UsarSaidaParcial)
+          comment += "\nS.PARCIAL=" + (string)(_UsarSaidaParcial ? "Sim":"Não");
+  if(_UsarBreakEven && _BreakEvenVal > 0)
+          comment += "\nBREAKEVEN=" + (string)_BreakEvenVal + "p";
+   if(_UsarTralingStop && _InicioTrailingStop)
+          comment += "\nTRAILINGSTOP=" + (string)_InicioTrailingStop + "p";
+  if(_PrecoDeAjuste >0) 
+          comment += "\nP.AJUSTE=" + (string)(_UsarPrecoAjuste ? "Sim":"Não");
+  if(_UsarMetaDiaria && _ValorTotalMeta > 0) 
+          comment += "\nM.DIARIA=R$" + (string)_ValorTotalMeta;
+  if(_UsarStopATR >0) 
+          comment += "\nSTOP ATR=" + (string)(_UsarStopATR ? "Sim":"Não");
+                                       
+   Comment(comment);
 }
 
 void Ea_2MAdxClass::DesenharOBJ(double preco,long cor)
 {
-   ObjectDelete(0,"LnAjuste");
+   string nomeObj = "PrecoAjuste";
+   ObjectDelete(0,nomeObj);
    if(preco <=0) return;   
    
    datetime date[];
@@ -617,13 +599,13 @@ void Ea_2MAdxClass::DesenharOBJ(double preco,long cor)
 
    if(!preco)
       preco=SymbolInfoDouble(_Simbolo,SYMBOL_BID);
-                      
-   ObjectCreate(0,"LnAjuste",OBJ_HLINE,0,date[0],preco,0);           
-   ObjectSetInteger(0,"LnAjuste",OBJPROP_COLOR,cor);
-   ObjectSetInteger(0,"LnAjuste",OBJPROP_STYLE,STYLE_DASH);
-   ObjectSetInteger(0,"LnAjuste",OBJPROP_WIDTH,3);
-   ObjectSetInteger(0,"LnAjuste",OBJPROP_RAY_RIGHT,1);
-   ObjectSetInteger(0,"LnAjuste",OBJPROP_RAY_LEFT,1);
+                  
+   ObjectCreate(0,nomeObj,OBJ_HLINE,0,date[0],preco,0);           
+   ObjectSetInteger(0,nomeObj,OBJPROP_COLOR,cor);
+   ObjectSetInteger(0,nomeObj,OBJPROP_STYLE,STYLE_DASH);
+   ObjectSetInteger(0,nomeObj,OBJPROP_WIDTH,3);
+   ObjectSetInteger(0,nomeObj,OBJPROP_RAY_RIGHT,1);
+   ObjectSetInteger(0,nomeObj,OBJPROP_RAY_LEFT,1);
 }
 
 //+------------------------------------------------------------------+ 

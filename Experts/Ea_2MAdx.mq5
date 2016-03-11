@@ -25,7 +25,7 @@
 //+------------------------------------------------------------------+ 
 
 // Parametros de entrada
-input string   Sessao_01="===== Configurações do volume"; //Volume (MINI-INDICE)
+input string   Sessao_01="===== Config. do volume (MINI-INDICE)"; //Volume 
 input double   Lote=3.0;            // Lotes para o Trade
 input double   TakeProfit=300;      // Ganho TP(Pontos)
 input double   StopLoss=80;         // Perda SL(Pontos)
@@ -47,7 +47,7 @@ input eConfirmar UsarTralingStop=true; // Usar Trailing Stop
 input double   InicioTrailingStop=100; // Início Trailing Stop
 input double   MudancaTrailing=20;     // Valor mudança Trailing Stop
 
-input string   Sessao_05="===== Configuração Quant. Op. Gain e Loss"; //Total Operações
+input string   Sessao_05="===== Config. Quant. Op. Gain e Loss"; //Total Operações
 input int      MaximoStopGain=0; // Máximo total trade com Stop Gain
 input int      MaximoStopLoss=2; // Máximo total trade com Stop Loss
 
@@ -60,7 +60,7 @@ input string   Sessao_07="===== Configuração Meta Diária"; //Meta diária
 input eConfirmar UsarMetaDiaria=true;  //Usar Meta Diáia
 input double   ValorCorretagem = 2.00; // Valor corretagem (R$)
 //input double   ValorTaxas = 9.00;    // Valor taxa IBOV (R$)
-input double   TotalMeta = 150.00;      // Total meta (R$)
+input double   TotalMeta = 150.00;     // Total meta (R$)
 input eTipoMeta TipoMeta = Liquido;    // Total do valor (Liquido/Bruto)
 
 input string   Sessao_08="===== Configurações Indicadores"; //Indicadores
@@ -74,11 +74,11 @@ input string   Sessao_09="===== Configuração Horário Trade"; //Horário
 input string   HoraInicio = "09:10"; // Hora Início do Trader
 input string   HoraFim    = "17:55"; // Hora Fim do Trader
 
-input string   Sessao_11="===== Config. Horário De Não Operar"; // Horário De Não Operar
+input string   Sessao_10="===== Config. Horário De Não Operar"; // Horário De Não Operar
 input string   WaitHoraInicio = "12:10"; // Hora Início de Aguardar
 input string   WaitHoraFim    = "13:10"; // Hora Fim de Aguardar
 
-input string   Sessao_10="===== Configuração Identificador EA"; //ID
+input string   Sessao_11="===== Configuração Identificador EA"; //ID
 input int      EA_Magico=12345; // Identificador EA
 
 // Criando objeto da classe
@@ -118,6 +118,8 @@ int OnInit()
    CExpert.SetValorTotalMeta(TotalMeta);
    CExpert.SetTipoMeta(TipoMeta);
    CExpert.SetUsarStopATR(UsarStopATR);
+   
+   CExpert.SetTamanhoMaxCadle(200.0); // Tamanho máximo do candle anterior
    
    CExpert.SetUsarSaidaParcial(UsarSaidaParcial);
    CExpert.SetLoteSaidaParcial_1(LoteSaidaParcial_1);
@@ -181,7 +183,7 @@ void OnTick()
       // Saida Parcial
       CExpert.SaidaParcial(cPos.PositionType());
                   
-      // Braek even
+      // BreakEven
       CExpert.BreakEven(cPos.PositionType());      
       
       // Trailing Stop

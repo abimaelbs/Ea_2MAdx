@@ -79,11 +79,13 @@ input string   WaitHoraInicio = "12:10"; // Hora Início de Aguardar
 input string   WaitHoraFim    = "13:10"; // Hora Fim de Aguardar
 
 input string   Sessao_11="===== Configuração Identificador EA"; //ID
+input eConfirmar UsarSom = true; // Habilitar som ao realizar operação
 input int      EA_Magico=12345; // Identificador EA
 
 // Criando objeto da classe
 CPositionInfo cPos;
 Ea_2MAdxClass CExpert;
+Utils         cUtil;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -196,6 +198,6 @@ void OnTick()
 void OnTrade()
   {
    CExpert.GetInformation();
+   cUtil.PlaySoundByID(SOUND_OPEN_POSITION,UsarSom);
   }
 //+------------------------------------------------------------------+
-

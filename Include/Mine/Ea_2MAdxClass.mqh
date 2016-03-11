@@ -10,9 +10,9 @@
 #include <Trade/Trade.mqh>
 #include <Mine/Utils.mqh>
 #include <Mine/Enums.mqh>
-#include <Charts\Chart.mqh>
+//#include <Charts\Chart.mqh>
 
-CChart cchart;
+//CChart cchart;
 CTrade cTrade;
 
 int   totalGains,
@@ -238,14 +238,14 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
   {      
    if(_clUtils.IsNewDay()) GetInformation();
    
-   if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim)) return(-1);
+   //if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim)) return(-1);
    
-   if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) return(-1);
+   //if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) return(-1);
    
    // Se já alcançou meta diária, não opera mais   
-   if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return(-1);
+   //if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return(-1);
      
-   if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return(-1);
+   //if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return(-1);
    
    GetBuffers();   
    
@@ -292,8 +292,30 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
          if(!IsCondition_5) return(-1);
              
-      if(_clUtils.IsNewBar(_Simbolo))                     
-            return(ORDER_TYPE_BUY);                        
+      if(_clUtils.IsNewBar(_Simbolo)) 
+      {  
+         if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) 
+         {
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");
+            return(-1);
+         }
+         if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
+         {
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Total de operações ja alcançada...");
+            return(-1);
+         }
+         if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim))
+         { 
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra) Fora do Horário...");
+            return(-1);            
+         }
+         if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) 
+         {
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra) Aguardando horário...");
+            return(-1);
+         }
+         return(ORDER_TYPE_BUY);
+      }
    }
 
    /* Se condição de venda.
@@ -323,8 +345,30 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
          if(!IsCondition_5) return(-1);
       
-      if(_clUtils.IsNewBar(_Simbolo))                   
-            return(ORDER_TYPE_SELL);                        
+      if(_clUtils.IsNewBar(_Simbolo)) 
+      {
+         if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) 
+         {
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");
+            return(-1);
+         }
+         if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
+         {
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Total de operações ja alcançada...");
+            return(-1);
+         }
+         if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim))
+         { 
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda) Fora do Horário...");
+            return(-1);            
+         }
+         if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) 
+         {
+            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda) Aguardando horário...");
+            return(-1);
+         }                  
+         return(ORDER_TYPE_SELL);
+      }
    }
 
    return(-1);
@@ -410,7 +454,7 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       if(!cTrade.Buy(_Lote,_Simbolo,latest_price.bid,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra)"))
          _clUtils.PlaySoundByID(SOUND_ERROR);
-      else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
+      //else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
      }
    else if(typeOrder==ORDER_TYPE_SELL)
      {
@@ -428,7 +472,7 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       if(!cTrade.Sell(_Lote,_Simbolo,latest_price.ask,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda)"))
          _clUtils.PlaySoundByID(SOUND_ERROR);
-      else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
+      //else _clUtils.PlaySoundByID(SOUND_OPEN_POSITION);
      }
   }
 //+------------------------------------------------------------------+ 
@@ -559,10 +603,13 @@ void Ea_2MAdxClass::GetInformation(void)
          PrintFormat("We couldn't select a deal, with the index %d. Error %d",i,GetLastError());
         }
      }
+   
+   double lucro = profit +(loss) - totalCorretagem; 
       
-   string comment  = "T.ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote;
-          comment += "\nGAIN=R$"+StringFormat("%.2f",profit);
-          comment += "\nLOSS=R$"+StringFormat("%.2f",loss);
+   string comment  = "ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote;
+          comment += (lucro >=0 ? "\nLUCRO=R$" : "\nPREJUIZO=R$") + StringFormat("%.2f",lucro);  
+          //comment += "\nGAIN=R$"+StringFormat("%.2f",profit);
+          //comment += "\nLOSS=R$"+StringFormat("%.2f",loss);
           comment += "\nCORRETAGEM=R$"+StringFormat("%.2f",totalCorretagem);
           comment += "\nTOTAL GAIN="+StringFormat("%d",totalGains);
           comment += "\nTOTAL LOSS="+StringFormat("%d",totalLoss);
@@ -575,7 +622,7 @@ void Ea_2MAdxClass::GetInformation(void)
   if(_PrecoDeAjuste >0) 
           comment += "\nP.AJUSTE=" + (string)(_UsarPrecoAjuste ? "Sim":"Não");
   if(_UsarMetaDiaria && _ValorTotalMeta > 0) 
-          comment += "\nM.DIARIA=R$" + (string)_ValorTotalMeta;
+          comment += "\nM.DIARIA=R$" +  StringFormat("%.2f",_ValorTotalMeta);
   if(_UsarStopATR >0) 
           comment += "\nSTOP ATR=" + (string)(_UsarStopATR ? "Sim":"Não");
                                        

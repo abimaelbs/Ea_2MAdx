@@ -22,7 +22,7 @@ string SoundAdjustOrder    = "::Files\\Sounds\\WHOOSH.WAV";
 string SoundCloseWithProfit= "::Files\\Sounds\\VERYGOOD.WAV";
 string SoundCloseWithLoss  = "::Files\\Sounds\\DRIVEBY.WAV";
 
-sinput bool       UseSound     =true; // Sound notifications
+sinput bool       UseSound = true; // Sound notifications
 
 class Utils
   {
@@ -59,7 +59,7 @@ public:
                      double loteSaida /*Valor acima da entrada*/,
                      double valorSaida);
                      
-   void PlaySoundByID(int id);                  
+   void PlaySoundByID(int id,bool IsTocar=true);
    void WriteFile(string texto="");                     
   };
 
@@ -131,7 +131,8 @@ void Utils::TrailingStop(string simbolo, int tpOrdem,double valorInicio,double v
             if (precoRecente.last >=  precoEntrada + valorInicio && posisao_sl < precoEntrada)
             {
                posisao_sl = precoEntrada;                        
-               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);            
+               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);
+               Print(MQL5InfoString(MQL5_PROGRAM_NAME)," TrailingStop acionado:"+(string)posisao_sl);
             }
             else if (precoRecente.last >= (posisao_sl + valorInicio) + valorMudarTrailing  && posisao_sl >= precoEntrada)
             {
@@ -140,16 +141,18 @@ void Utils::TrailingStop(string simbolo, int tpOrdem,double valorInicio,double v
                else 
                   posisao_sl = precoRecente.last - valorInicio;
                   
-               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);            
+               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);
+               Print(MQL5InfoString(MQL5_PROGRAM_NAME)," TrailingStop acionado:"+(string)posisao_sl);
             }      
          }
          else if(tpOrdem == POSITION_TYPE_SELL)
          {         
-             // Traz loss para o preço de entrada
+            // Traz loss para o preço de entrada
             if (precoRecente.last <=  precoEntrada - valorInicio && posisao_sl > precoEntrada)
             {   
                posisao_sl = precoEntrada;                           
-               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);            
+               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp); 
+               Print(MQL5InfoString(MQL5_PROGRAM_NAME)," TrailingStop acionado:"+(string)posisao_sl);
             }
             else if (precoRecente.last <= ( posisao_sl - valorInicio) - valorMudarTrailing && posisao_sl <= precoEntrada)
             {
@@ -158,7 +161,8 @@ void Utils::TrailingStop(string simbolo, int tpOrdem,double valorInicio,double v
                else 
                   posisao_sl = precoRecente.last + valorInicio;
                   
-               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);            
+               clTrade.PositionModify(simbolo,posisao_sl,posisao_tp);
+               Print(MQL5InfoString(MQL5_PROGRAM_NAME)," TrailingStop acionado:"+(string)posisao_sl);
             }       
          }
       } 
@@ -196,7 +200,7 @@ void Utils::BreakEven(string simbolo,int tpOrdem,double inicioBreakEven,double v
               {
                   new_sl=NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN)+valorAcimaEntrada,_Digits);               
                   clTrade.PositionModify(simbolo,new_sl,pos_tp);
-                  Print(MQL5InfoString(MQL5_PROGRAM_NAME)," executou BreakEven!");
+                  Print(MQL5InfoString(MQL5_PROGRAM_NAME)," BreakEven acionado!");
               }
            }
          else if(tpOrdem==POSITION_TYPE_SELL)
@@ -207,7 +211,7 @@ void Utils::BreakEven(string simbolo,int tpOrdem,double inicioBreakEven,double v
               {
                   new_sl=NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN)-valorAcimaEntrada,_Digits);               
                   clTrade.PositionModify(simbolo,new_sl,pos_tp);
-                  Print(MQL5InfoString(MQL5_PROGRAM_NAME)," executou BreakEven!");
+                  Print(MQL5InfoString(MQL5_PROGRAM_NAME)," BreakEven acionado!");
               }
          }      
       }
@@ -291,17 +295,7 @@ bool Utils::ValidarHoraEntrada(string horaInicio,string horaFim)
    datetime vtmFim=StringToTime(vHoraFim+":"+vMinutoFim);
          
    if(tm >= vtmIni && tm < vtmFim)
-      return true;
-
-   /*
-      if(dt_struct.hour>=StringToInteger(vHoraInicio) && dt_struct.min>=StringToInteger(vMinutoInicio))
-        {
-         if(horaFim!="")
-            if(dt_struct.hour>=StringToInteger(vHoraFim) && dt_struct.min>=StringToInteger(vMinutoFim))
-               return(false);
-        }
-      else
-         return(false);*/
+      return true;   
    } 
 
    return(false);
@@ -436,9 +430,9 @@ bool Utils::IsNewDay(void)
 //+------------------------------------------------------------------+
 //| Tocar sons                                                       |
 //+------------------------------------------------------------------+
-void Utils::PlaySoundByID(int id)
+void Utils::PlaySoundByID(int id,bool IsTocar=true)
 {
-  if(UseSound)
+  if(IsTocar)
   {
    //--- Play the sound based on the identifier passed
    switch(id)

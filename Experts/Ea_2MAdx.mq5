@@ -27,15 +27,15 @@
 // Parametros de entrada
 input string   Sessao_01="===== Config. do volume (MINI-INDICE)"; //Volume 
 input double   Lote=3.0;            // Lotes para o Trade
-input double   TakeProfit=300;      // Ganho TP(Pontos)
+input double   TakeProfit=500;      // Ganho TP(Pontos)
 input double   StopLoss=80;         // Perda SL(Pontos)
 
 input string   Sessao_02="===== Configuração Realização Parcial"; //Saida Parcial
 input eConfirmar UsarSaidaParcial= true; // Usar Saida Parcial
 input double   LoteSaidaParcial_1 = 1.0; // Lotes para saida parcial (Primeira)
-input double   ValorSaidaParcial_1= 120; // Ganho TP Saida Parcial(Pontos)
+input double   ValorSaidaParcial_1= 150; // Ganho TP Saida Parcial(Pontos)
 input double   LoteSaidaParcial_2 = 1.0; // Lotes para saida parcial (Segunda)
-input double   ValorSaidaParcial_2= 180; // Ganho TP Saida Parcial(Pontos)
+input double   ValorSaidaParcial_2= 250; // Ganho TP Saida Parcial(Pontos)
 
 input string   Sessao_03="===== Configurações Break-Even"; //BreakEven
 input eConfirmar UsarBreakEven=true; // Usar BreakEven
@@ -45,7 +45,7 @@ input double   PontosAcimaEntrada=20;// Pontos acima do preço de entrada
 input string   Sessao_04="===== Configurações Trailing Stop"; //Trailing Stop
 input eConfirmar UsarTralingStop=true; // Usar Trailing Stop
 input double   InicioTrailingStop=100; // Início Trailing Stop
-input double   MudancaTrailing=20;     // Valor mudança Trailing Stop
+input double   MudancaTrailing=20;      // Valor mudança Trailing Stop
 
 input string   Sessao_05="===== Config. Quant. Op. Gain e Loss"; //Total Operações
 input int      MaximoStopGain=0; // Máximo total trade com Stop Gain
@@ -68,10 +68,10 @@ input int      MA_Periodo=17;       // Período Média Móvel
 input int      MALong_Periodo=72;   // Período Média Móvel Longa
 input ENUM_MA_METHOD MetodoMM=MODE_EMA;// Método Média Móvel
 input double   Adx_Min=21.0;           // Valor mínimo ADX
-input eConfirmar UsarStopATR = false;  // Usar Stop ATR
+//input eConfirmar UsarStopATR = false;  // Usar Stop ATR
 
 input string   Sessao_09="===== Configuração Horário Trade"; //Horário
-input string   HoraInicio = "09:10"; // Hora Início do Trader
+input string   HoraInicio = "09:15"; // Hora Início do Trader
 input string   HoraFim    = "17:55"; // Hora Fim do Trader
 
 input string   Sessao_10="===== Config. Horário De Não Operar"; // Horário De Não Operar
@@ -118,11 +118,9 @@ int OnInit()
    CExpert.SetUsarMetaDiaria(UsarMetaDiaria);
    CExpert.SetValorTotalMeta(TotalMeta);
    CExpert.SetTipoMeta(TipoMeta);
-   CExpert.SetUsarStopATR(UsarStopATR);
-   
-   CExpert.SetTamanhoMaxCadle(200.0); // Tamanho máximo do candle anterior
-   CExpert.SetUsarSom(UsarSom);
-   
+   //CExpert.SetUsarStopATR(UsarStopATR);
+   CExpert.SetTamanhoMaxCadle((_Digits == 3 || _Digits==5) ? 10:200); // Tamanho máximo do candle anterior
+   CExpert.SetUsarSom(UsarSom);   
    CExpert.SetUsarSaidaParcial(UsarSaidaParcial);
    CExpert.SetLoteSaidaParcial_1(LoteSaidaParcial_1);
    CExpert.SetValorSaidaParcial_1(ValorSaidaParcial_1);

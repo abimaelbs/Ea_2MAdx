@@ -22,7 +22,7 @@ string SoundAdjustOrder    = "::Files\\Sounds\\WHOOSH.WAV";
 string SoundCloseWithProfit= "::Files\\Sounds\\VERYGOOD.WAV";
 string SoundCloseWithLoss  = "::Files\\Sounds\\DRIVEBY.WAV";
 
-sinput bool       UseSound = true; // Sound notifications
+//sinput bool       UseSound = true; // Sound notifications
 
 class Utils
   {
@@ -421,9 +421,20 @@ bool Utils::IsNewDay(void)
    if(hoje!=dt_struct.day_of_week)
      {
       hoje=dt_struct.day_of_week;
+      
+      switch(hoje)
+      {
+         case 0:Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" novo dia(Domingo)");break;
+         case 1:Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" novo dia(Segunda-Feira)");break;
+         case 2:Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" novo dia(Terça-Feira)");break;
+         case 3:Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" novo dia(Quarta-Feira)");break;
+         case 4:Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" novo dia(Quinta-Feira)");break;
+         case 5:Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" novo dia(Sexta-Feira)");break;
+         case 6:Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" novo dia(Sábado)");break;
+         default: Print("desconhecido"); break;
+      }       
       return(true);
-     }
-     
+     }     
    return(false);
 }
 

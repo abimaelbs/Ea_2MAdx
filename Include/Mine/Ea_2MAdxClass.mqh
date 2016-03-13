@@ -151,7 +151,8 @@ public:
    void              SaidaParcial(int tipoOrder); 
 protected:
    void              GetBuffers();      
-   void              ClosePosition();   
+   void              ClosePosition();
+   bool              IsOperar();
   };
  
 //+------------------------------------------------------------------+
@@ -244,17 +245,9 @@ void Ea_2MAdxClass::DoUnit(void)
 //+------------------------------------------------------------------+
 ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
   {      
-   if(_clUtils.IsNewDay()) GetInformation();
-   
-   //if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim)) return(-1);
-   
-   //if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) return(-1);
-   
-   // Se já alcançou meta diária, não opera mais   
-   //if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) return(-1);
-     
-   //if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) return(-1);
-   
+   if(_clUtils.IsNewDay())          
+      GetInformation();
+      
    GetBuffers();   
    
    bool IsCondition_1=false;
@@ -302,26 +295,8 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
              
       if(_clUtils.IsNewBar(_Simbolo)) 
       {  
-         if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) 
-         {
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");
+         if(!IsOperar()) 
             return(-1);
-         }
-         if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
-         {
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Total de operações ja alcançada...");
-            return(-1);
-         }
-         if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim))
-         { 
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra) Fora do Horário...");
-            return(-1);            
-         }
-         if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) 
-         {
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra) Aguardando horário...");
-            return(-1);
-         }
          return(ORDER_TYPE_BUY);
       }
    }
@@ -355,32 +330,40 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       
       if(_clUtils.IsNewBar(_Simbolo)) 
       {
-         if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) 
-         {
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");
+         if(!IsOperar()) 
             return(-1);
-         }
-         if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
-         {
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" Total de operações ja alcançada...");
-            return(-1);
-         }
-         if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim))
-         { 
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda) Fora do Horário...");
-            return(-1);            
-         }
-         if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) 
-         {
-            Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" (Venda) Aguardando horário...");
-            return(-1);
-         }                  
          return(ORDER_TYPE_SELL);
       }
    }
 
    return(-1);
   }
+  
+bool Ea_2MAdxClass::IsOperar(void)
+{
+   if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) 
+   {
+      Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");
+      return(false);
+   }
+   if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
+   {
+      Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Total de operações ja alcançada no dia...");
+      return(false);
+   }
+   if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim))
+   { 
+      Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" fora de horário, Inicio:"+_HoraInicio+" Fim:"+_HoraFim);
+      return(false);            
+   }
+   if(_clUtils.ValidarHoraWait(_WaitHoraInicio,_WaitHoraFim)) 
+   {
+      Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" aguardando horário...");
+      return(false);
+   } 
+   
+   return(true);
+}  
 //+------------------------------------------------------------------+ 
 //| Pegar valores Indicadores                                        | 
 //+------------------------------------------------------------------+
@@ -452,10 +435,13 @@ void Ea_2MAdxClass::AbrirPosicao(ENUM_ORDER_TYPE typeOrder)
       else if(_TakeProfit>0) tp=latest_price.bid+NormalizeDouble(_TakeProfit,_Digits);
       
       //Comment((string)NormalizeDouble(round((int)(_ATR_Valor[0] * 2.5)),_Digits));      
-      //Comment((string)NormalizeDouble(MathRound((int)_ATR_Valor[0]),_Digits));
-      
-      if(_UsarStopATR)               
-         sl = latest_price.bid-NormalizeDouble(MathAbs((int)(_ATR_Valor[0] * 2.5) ),_Digits);
+            
+      if(_UsarStopATR)
+      {    
+         //Comment("Valor StopATR:"+(string)NormalizeDouble(MathRound(MathRound(_ATR_Valor[0])) *2.5,_Digits));         
+         int aux_stop = (int)(MathRound(StringToDouble((string)_ATR_Valor[0]))*10);
+         sl = latest_price.bid-NormalizeDouble(aux_stop * 2.5,_Digits);
+      }
       
       cTrade.SetExpertMagicNumber(_NumeroMagico);
       if(!cTrade.Buy(_Lote,_Simbolo,latest_price.bid,sl,tp,MQL5InfoString(MQL5_PROGRAM_NAME)+" (Compra)"))

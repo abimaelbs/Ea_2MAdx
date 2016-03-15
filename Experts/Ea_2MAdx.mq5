@@ -30,6 +30,10 @@ input double   Lote=3.0;            // Lotes para o Trade
 input double   TakeProfit=500;      // Ganho TP(Pontos)
 input double   StopLoss=80;         // Perda SL(Pontos)
 
+input string   Sessao_05="===== Config. Quant. Op. Gain e Loss"; //Total Operações
+input int      MaximoStopGain=0; // Máximo total trade com Stop Gain
+input int      MaximoStopLoss=2; // Máximo total trade com Stop Loss
+
 input string   Sessao_02="===== Configuração Realização Parcial"; //Saida Parcial
 input eConfirmar UsarSaidaParcial= true; // Usar Saida Parcial
 input double   LoteSaidaParcial_1 = 1.0; // Lotes para saida parcial (Primeira)
@@ -46,10 +50,6 @@ input string   Sessao_04="===== Configurações Trailing Stop"; //Trailing Stop
 input eConfirmar UsarTralingStop=true; // Usar Trailing Stop
 input double   InicioTrailingStop=100; // Início Trailing Stop
 input double   MudancaTrailing=20;      // Valor mudança Trailing Stop
-
-input string   Sessao_05="===== Config. Quant. Op. Gain e Loss"; //Total Operações
-input int      MaximoStopGain=0; // Máximo total trade com Stop Gain
-input int      MaximoStopLoss=2; // Máximo total trade com Stop Loss
 
 input string   Sessao_06="===== Configuração Preço de Ajuste"; //Preço de Ajuste
 input eConfirmar UsarPrecoAjuste = false; // Comprar/Vender no Preço de ajuste 
@@ -86,6 +86,7 @@ input int      EA_Magico=12345; // Identificador EA
 CPositionInfo cPos;
 Ea_2MAdxClass CExpert;
 
+ ENUM_ORDER_TYPE _TipoOrder;
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -126,7 +127,7 @@ int OnInit()
    CExpert.SetValorSaidaParcial_1(ValorSaidaParcial_1);
    CExpert.SetLoteSaidaParcial_2(LoteSaidaParcial_2);
    CExpert.SetValorSaidaParcial_2(ValorSaidaParcial_2);
-   
+   _TipoOrder = -1;
    CExpert.DoInit(MA_Periodo,MALong_Periodo);
    
    if(WaitHoraInicio != "" && WaitHoraFim =="")
@@ -160,24 +161,28 @@ void OnDeinit(const int reason)
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
 void OnTick()
-  {
+ {
+   _TipoOrder = -1;
+   
    //--- Verifica se tem barras suficiente
-   if(Bars(_Symbol,_Period)<30) {
+   if(Bars(_Symbol,_Period)<30) 
+   {
       CExpert.ShowErro("Menos de 30 barras, o EA será fechado:",GetLastError());
       return;
-     }
+   }
 
-   if(!cPos.Select(_Symbol)) {
-      ENUM_ORDER_TYPE typeOrder=CExpert.CheckOpenTrade();
+   if(!cPos.Select(_Symbol)) 
+   {     
+      _TipoOrder=CExpert.CheckOpenTrade();
 
-      if(typeOrder==ORDER_TYPE_BUY || typeOrder==ORDER_TYPE_SELL) 
+      if(_TipoOrder==ORDER_TYPE_BUY || _TipoOrder==ORDER_TYPE_SELL) 
       {         
-         CExpert.AbrirPosicao(typeOrder);
+         CExpert.AbrirPosicao(_TipoOrder);
          primeiraSaida = segundaSaida = false;
       }
-     }
+   }
    else
-     {
+   {
       if(CExpert.CheckCloseTrade()) return;
       
       // Saida Parcial
@@ -188,13 +193,13 @@ void OnTick()
       
       // Trailing Stop
       CExpert.TrainlingStop(cPos.PositionType());
-     }
-  }
+   }
+}
 //+------------------------------------------------------------------+
 //| Expert Checar Gains e Loss                                       |
 //+------------------------------------------------------------------+
 void OnTrade()
-  {   
+{   
    CExpert.GetInformation();
-  }
+}
 //+------------------------------------------------------------------+

@@ -250,94 +250,96 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       
    GetBuffers();   
    
-   bool IsCondition_1=false;
-   bool IsCondition_2=false;
-   bool IsCondition_3=false;
-   bool IsCondition_4=false;
-   bool IsCondition_5=false;
-   
-   // Se debugando
-   /*
-   if ( MQL5InfoInteger(MQL5_DEBUGGING) )
+   if(!PositionSelect(_Simbolo))
    {
-      if(_MAShort_Valor[0] > _MALong_Valor[0] )
-         return(ORDER_TYPE_BUY);
-     if(_MAShort_Valor[0] < _MALong_Valor[0] ) 
-      return(ORDER_TYPE_SELL);                        
-   } */
-   
-   /* Se condição de compra.
-      Se preço negociado acima da média móvel e barra anterior acima da média móvel.
-   */
-   // Médias
-   IsCondition_1 = ( _MAShort_Valor[0] > _MALong_Valor[0] );
-   
-   // Último e penúltimo negócios acima da média de curto período
-   IsCondition_2 = ( latest_price.last > _MAShort_Valor[0] && mrate[1].high > _MAShort_Valor[1] && 
-                     latest_price.last > mrate[1].high && mrate[1].high > mrate[2].high ); 
-                       
-   // ADX maior que valor mínimo e +DI acima de -DI
-   IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&  _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1]);      
-         
-   // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
-   IsCondition_4 = (mrate[0].low > mrate[1].low && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
-   
-    // Se negócio abaixo do preço de ajuste, não comprar
-   IsCondition_5 = ( latest_price.last > _PrecoDeAjuste);
-                    
-   if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
-   {
-      if(GetPeriodo()==1)                 
-         if(!(mrate[2].high > mrate[3].high)) return(-1); // Se última barra fechada maior que penúltima barra              
-       
-      if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
-         if(!IsCondition_5) return(-1);
-             
-      if(_clUtils.IsNewBar(_Simbolo)) 
-      {  
-         if(!IsOperar()) 
-            return(-1);
-         return(ORDER_TYPE_BUY);
-      }
-   }
-
-   /* Se condição de venda.
-      Se preço abaixo da média móvel e barra anterior menor que a média móvel.
-   */
-   // Médias
-   IsCondition_1 = ( _MAShort_Valor[0] < _MALong_Valor[0]);
-   
-   // Último e penúltimo negócios abaixo da média de curto período
-   IsCondition_2 = ( latest_price.last < _MAShort_Valor[0] && mrate[1].low < _MAShort_Valor[1] && 
-                     latest_price.last < mrate[1].low && mrate[1].low < mrate[2].low); 
-                       
-   // ADX maior que valor mínimo e +DI acima de -DI
-   IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] < _MenorDI[0] && _MenorDI[0] > _MenorDI[1]);                     
-        
-   // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
-   IsCondition_4 = (mrate[0].high < mrate[1].high && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
-   
-   // Se negócio acima do preço de ajuste, não vender                     
-   IsCondition_5 = ( latest_price.last < _PrecoDeAjuste );
-   
-   if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
-   {
-      if(GetPeriodo()==1)                 
-         if(!(mrate[2].low < mrate[3].low)) return(-1); // Se última barra fechada maior que penúltima      
+      bool IsCondition_1=false;
+      bool IsCondition_2=false;
+      bool IsCondition_3=false;
+      bool IsCondition_4=false;
+      bool IsCondition_5=false;
       
-      if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
-         if(!IsCondition_5) return(-1);
-      
-      if(_clUtils.IsNewBar(_Simbolo)) 
+      // Se debugando
+      /*
+      if ( MQL5InfoInteger(MQL5_DEBUGGING) )
       {
-         if(!IsOperar()) 
-            return(-1);
-         return(ORDER_TYPE_SELL);
+         if(_MAShort_Valor[0] > _MALong_Valor[0] )
+            return(ORDER_TYPE_BUY);
+        if(_MAShort_Valor[0] < _MALong_Valor[0] ) 
+         return(ORDER_TYPE_SELL);                        
+      } */
+      
+      /* Se condição de compra.
+         Se preço negociado acima da média móvel e barra anterior acima da média móvel.
+      */
+      // Médias
+      IsCondition_1 = ( _MAShort_Valor[0] > _MALong_Valor[0] );
+      
+      // Último e penúltimo negócios acima da média de curto período
+      IsCondition_2 = ( latest_price.last > _MAShort_Valor[0] && mrate[1].high > _MAShort_Valor[1] && 
+                        latest_price.last > mrate[1].high && mrate[1].high > mrate[2].high ); 
+                          
+      // ADX maior que valor mínimo e +DI acima de -DI
+      IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&  _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1]);      
+            
+      // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
+      IsCondition_4 = (mrate[0].low > mrate[1].low && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
+      
+       // Se negócio abaixo do preço de ajuste, não comprar
+      IsCondition_5 = ( latest_price.last > _PrecoDeAjuste);
+                       
+      if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
+      {
+         if(GetPeriodo()==1)                 
+            if(!(mrate[2].high > mrate[3].high)) return(-1); // Se última barra fechada maior que penúltima barra              
+          
+         if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
+            if(!IsCondition_5) return(-1);
+                
+         if(_clUtils.IsNewBar(_Simbolo)) 
+         {  
+            if(!IsOperar()) 
+               return(-1);
+            return(ORDER_TYPE_BUY);
+         }
+      }
+   
+      /* Se condição de venda.
+         Se preço abaixo da média móvel e barra anterior menor que a média móvel.
+      */
+      // Médias
+      IsCondition_1 = ( _MAShort_Valor[0] < _MALong_Valor[0]);
+      
+      // Último e penúltimo negócios abaixo da média de curto período
+      IsCondition_2 = ( latest_price.last < _MAShort_Valor[0] && mrate[1].low < _MAShort_Valor[1] && 
+                        latest_price.last < mrate[1].low && mrate[1].low < mrate[2].low); 
+                          
+      // ADX maior que valor mínimo e +DI acima de -DI
+      IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] < _MenorDI[0] && _MenorDI[0] > _MenorDI[1]);                     
+           
+      // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
+      IsCondition_4 = (mrate[0].high < mrate[1].high && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
+      
+      // Se negócio acima do preço de ajuste, não vender                     
+      IsCondition_5 = ( latest_price.last < _PrecoDeAjuste );
+      
+      if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
+      {
+         if(GetPeriodo()==1)                 
+            if(!(mrate[2].low < mrate[3].low)) return(-1); // Se última barra fechada maior que penúltima      
+         
+         if(_UsarPrecoAjuste && _PrecoDeAjuste > 0)
+            if(!IsCondition_5) return(-1);
+         
+         if(_clUtils.IsNewBar(_Simbolo)) 
+         {
+            if(!IsOperar()) 
+               return(-1);
+            return(ORDER_TYPE_SELL);
+         }
       }
    }
-
    return(-1);
-  }
+}
   
 bool Ea_2MAdxClass::IsOperar(void)
 {
@@ -502,13 +504,16 @@ void Ea_2MAdxClass::ClosePosition(void)
 //| Fechar todas as posições do trade                                | 
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::BreakEven(ENUM_POSITION_TYPE typeOrder)
-  {   
+{   
 	if(_UsarBreakEven) 
 	{ 
-	   _clUtils.SetNumeroMagico(_NumeroMagico);
-      _clUtils.BreakEven(_Simbolo,typeOrder,_BreakEvenVal,_TicksAcimaBreakEven);   
+   	if(PositionSelect(_Simbolo))
+   	{
+   	   _clUtils.SetNumeroMagico(_NumeroMagico);
+         _clUtils.BreakEven(_Simbolo,typeOrder,_BreakEvenVal,_TicksAcimaBreakEven);   
+      }
    }
-  }
+}
   
 //+------------------------------------------------------------------+ 
 //| Executa Trailing Stop                                            | 
@@ -517,8 +522,11 @@ void Ea_2MAdxClass::TrainlingStop(ENUM_POSITION_TYPE typeOrder)
 {
    if(_UsarTralingStop)
    {
-      _clUtils.SetNumeroMagico(_NumeroMagico);
-      _clUtils.TrailingStop(_Simbolo,typeOrder,_InicioTrailingStop,_MudancaTrailingStop);
+      if(PositionSelect(_Simbolo))
+      {
+         _clUtils.SetNumeroMagico(_NumeroMagico);
+         _clUtils.TrailingStop(_Simbolo,typeOrder,_InicioTrailingStop,_MudancaTrailingStop);
+      }
    }
 } 
 
@@ -654,16 +662,19 @@ void Ea_2MAdxClass::DesenharOBJ(double preco,long cor)
 //| Saida Parcial                                                    | 
 //+------------------------------------------------------------------+
 void Ea_2MAdxClass::SaidaParcial(int tipoOrder)
-{     
-   // Executar a 1ª Saida parcial
-   if(primeiraSaida == false && _ValorSaidaParcial_1 > 0 && _LoteSaidaParcial_1 > 0 && _UsarSaidaParcial)
+{   
+   if(PositionSelect(_Simbolo))
    {
-     _clUtils.SetNumeroMagico(_NumeroMagico);
-     primeiraSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_1,_ValorSaidaParcial_1);
-   } // Executar a 2ª Saida parcial
-   else if(segundaSaida == false && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
-   {
-      _clUtils.SetNumeroMagico(_NumeroMagico);
-      segundaSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_2,_ValorSaidaParcial_2);
+      // Executar a 1ª Saida parcial
+      if(primeiraSaida == false && _ValorSaidaParcial_1 > 0 && _LoteSaidaParcial_1 > 0 && _UsarSaidaParcial)
+      {
+        _clUtils.SetNumeroMagico(_NumeroMagico);
+        primeiraSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_1,_ValorSaidaParcial_1);
+      } // Executar a 2ª Saida parcial
+      else if(segundaSaida == false && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
+      {
+         _clUtils.SetNumeroMagico(_NumeroMagico);
+         segundaSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_2,_ValorSaidaParcial_2);
+      }
    }
 }

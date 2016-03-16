@@ -237,7 +237,9 @@ void Ea_2MAdxClass::DoUnit(void)
                 " | Corretagem:R$" + (string)totalCorretagem +
                 " | Perca:R$ " + (string)valarTotalLoss;
       
-   _clUtils.WriteFile(relatorio);   
+   _clUtils.WriteFile(relatorio); 
+    
+   Print(MQL5InfoString(MQL5_PROGRAM_NAME)," foi removido"); 
 }
 
 //+------------------------------------------------------------------+ 
@@ -602,7 +604,7 @@ void Ea_2MAdxClass::GetInformation(void)
         }
      }
    
-   double lucro = profit +(loss) - totalCorretagem; 
+   double lucro = profit +(loss) - totalCorretagem;
       
    string comment  = "ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote;
           comment += (lucro >=0 ? "\nLUCRO=R$" : "\nPREJUIZO=R$") + StringFormat("%.2f",lucro);  

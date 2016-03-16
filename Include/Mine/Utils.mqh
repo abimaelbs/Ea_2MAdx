@@ -119,9 +119,9 @@ void Utils::TrailingStop(string simbolo, int tpOrdem,double valorInicio,double v
    {              
      if(valorInicio > 0)
      {            
-         double posisao_tp = PositionGetDouble(POSITION_TP);
-         double posisao_sl = PositionGetDouble(POSITION_SL); 
-         double precoEntrada =  NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN),_Digits);
+         double posisao_tp   = PositionGetDouble(POSITION_TP);
+         double posisao_sl   = PositionGetDouble(POSITION_SL); 
+         double precoEntrada = NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN),_Digits);
                
          if (posisao_sl <= 0) return;
          

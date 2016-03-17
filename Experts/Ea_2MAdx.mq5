@@ -48,8 +48,8 @@ input double   PontosAcimaEntrada=20;// Pontos acima do preço de entrada
 
 input string   Sessao_05="===== Configurações Trailing Stop"; //Trailing Stop
 input eConfirmar UsarTralingStop =true; // Usar Trailing Stop ?
-input double   InicioTrailingStop=100; // Início Trailing Stop
-input double   MudancaTrailing   =20;     // Valor mudança Trailing Stop
+input double   InicioTrailingStop=100;  // Início Trailing Stop
+input double   MudancaTrailing   =20;   // Valor mudança Trailing Stop
 
 input string   Sessao_06="===== Configuração Preço de Ajuste"; //Preço de Ajuste
 input eConfirmar UsarPrecoAjuste = false; // Comprar/Vender no Preço de ajuste ? 
@@ -57,12 +57,12 @@ input double   PrecoAjuste    = 0.0;         // Preço de Ajuste Pregão Anterior
 input color    CorLinhaAjuste = clrRoyalBlue; // Preço de ajuste(Cor)
 //input ENUM_OBJECT Objeto = OBJ_HLINE;
 input string   Sessao_07="===== Configuração Meta Diária"; //Meta diária
-input eConfirmar UsarMetaDiaria=true;  //Usar Meta Diáia ?
+input eConfirmar UsarMetaDiaria=true;  // Usar Meta Diária ?
 input double   ValorCorretagem = 2.00; // Valor corretagem (R$)
 //input double   ValorTaxas = 9.00;    // Valor taxa IBOV (R$)
 input double   TotalMeta = 150.00;     // Total meta Gain (R$)
 input eTipoMeta TipoMeta = Liquido;    // Total do valor (Liquido/Bruto)
-//input double   TotalPrejuizo = 100.00; // Limite de Perca (R$)
+//input double   TotalPrejuizo = 100.00;// Limite de Perca (R$)
 
 input string   Sessao_08="===== Configurações Indicadores"; //Indicadores
 input int      MA_Periodo=17;          // Período Média Móvel Curta

@@ -62,6 +62,7 @@ private:
    bool              _UsarMetaDiaria;  // Usar meta diária
    double            _ValorTotalMeta;  // Total meta diária
    eTipoMeta         _TipoMeta;        // Tipo meta (liquido/bruto)
+   
    int               _MA_Manusear;     // Moving avarege para manusear da Média Móvel Simples
    int               _MALong_Manusear; // Moving avarege para manusear da Média Móvel Simples
    double            _MAShort_Valor[];  // Array para os valores da Média Móvel Simples.    
@@ -71,6 +72,9 @@ private:
    double            _MaiorDI[];      // Array para +BB do Banda de Boliger (Superior=1)
    double            _MenorDI[];      // Array para -BB do Banda de Boliger (Inferior=2)   
    int               _ATR_Manusear;   // Stop ATR
+   int               _Volume_Manusear;// Volume 
+   double            _Volume_Valor[]; // Volume
+   
    double            _ATR_Valor[];    // Valor ATR
    string            _HoraInicio;     // Usar controle de horas para entrada na operação
    string            _HoraFim;        // Usar controle de horas para saída na operação  
@@ -182,8 +186,9 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
        
    _MALong_Manusear= iCustom(_Simbolo,_Periodo,"Custom_iMALong", maLong, _MetodoMA, PRICE_CLOSE);
    _MA_Manusear    = iCustom(_Simbolo,_Periodo,"Custom_iMAShort", ma, _MetodoMA, PRICE_CLOSE);    
-   _ADX_Manusear   = iCustom(_Simbolo,_Periodo,"CustomADX",14); 
-   _ATR_Manusear   = iATR(_Simbolo,_Periodo,14);
+   _ADX_Manusear   = iCustom(_Simbolo,_Periodo,"CustomADX",14);
+   //_Volume_Manusear= iVolumes(_Simbolo,_Periodo,VOLUME_TICK); 
+   //_ATR_Manusear   = iATR(_Simbolo,_Periodo,14);
 
    //_MA_Manusear     = iMA(_Simbolo,_Periodo,ma,0,_MetodoMA,PRICE_CLOSE);         
    //_MALong_Manusear = iMA(_Simbolo,_Periodo,maLong,0,_MetodoMA,PRICE_CLOSE);
@@ -226,7 +231,7 @@ void Ea_2MAdxClass::DoUnit(void)
    IndicatorRelease(_MA_Manusear);
    IndicatorRelease(_MALong_Manusear);
    IndicatorRelease(_ADX_Manusear);
-   IndicatorRelease(_ATR_Manusear);
+   //IndicatorRelease(_ATR_Manusear);
    
    Comment("");
    
@@ -259,6 +264,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       bool IsCondition_3=false;
       bool IsCondition_4=false;
       bool IsCondition_5=false;
+      //bool IsCondition_6=false;
       
       // Se debugando
       /*
@@ -280,14 +286,17 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       IsCondition_2 = ( latest_price.last > _MAShort_Valor[0] && mrate[1].high > _MAShort_Valor[1] && 
                         latest_price.last > mrate[1].high && mrate[1].high > mrate[2].high ); 
                           
-      // ADX maior que valor mínimo e +DI acima de -DI
-      IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] &&  _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1]);      
+      // ADX maior que valor mínimo e +DI acima de -DI e ADX maior que +DI
+      IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && //_ADX_Valor[0] > _MaiorDI[0] && 
+                        _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1] && _MenorDI[0] > 9);      
             
       // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
       IsCondition_4 = (mrate[0].low > mrate[1].low && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
       
        // Se negócio abaixo do preço de ajuste, não comprar
       IsCondition_5 = ( latest_price.last > _PrecoDeAjuste);
+      
+      //IsCondition_6 = (_Volume_Valor[0] > _Volume_Valor[1]);
                        
       if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
       {
@@ -299,12 +308,17 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
                 
          if(_clUtils.IsNewBar(_Simbolo)) 
          {  
-            if(!IsOperar()) 
-               return(-1);
-            return(ORDER_TYPE_BUY);
+            if(IsOperar())                
+               return(ORDER_TYPE_BUY);
          }
       }
-   
+      
+      IsCondition_1=false;
+      IsCondition_2=false;
+      IsCondition_3=false;
+      IsCondition_4=false;
+      IsCondition_5=false;
+      //IsCondition_6=false;
       /* Se condição de venda.
          Se preço abaixo da média móvel e barra anterior menor que a média móvel.
       */
@@ -315,14 +329,17 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       IsCondition_2 = ( latest_price.last < _MAShort_Valor[0] && mrate[1].low < _MAShort_Valor[1] && 
                         latest_price.last < mrate[1].low && mrate[1].low < mrate[2].low); 
                           
-      // ADX maior que valor mínimo e +DI acima de -DI
-      IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && _MaiorDI[0] < _MenorDI[0] && _MenorDI[0] > _MenorDI[1]);                     
+      // ADX maior que valor mínimo e +DI acima de -DI e ADX maior que -DI
+      IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && //_ADX_Valor[0] > _MenorDI[0] &&
+                        _MenorDI[0] > _MaiorDI[0] && _MenorDI[0] > _MenorDI[1] && _MaiorDI[0] > 9);
            
       // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
       IsCondition_4 = (mrate[0].high < mrate[1].high && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
       
       // Se negócio acima do preço de ajuste, não vender                     
       IsCondition_5 = ( latest_price.last < _PrecoDeAjuste );
+      
+      //IsCondition_6 = (_Volume_Valor[0] > _Volume_Valor[1]);
       
       if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
       {
@@ -334,9 +351,8 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
          
          if(_clUtils.IsNewBar(_Simbolo)) 
          {
-            if(!IsOperar()) 
-               return(-1);
-            return(ORDER_TYPE_SELL);
+            if(IsOperar())                
+               return(ORDER_TYPE_SELL);
          }
       }
    }
@@ -374,6 +390,8 @@ bool Ea_2MAdxClass::IsOperar(void)
 void Ea_2MAdxClass::GetBuffers(void)
   {
    ZeroMemory(_MAShort_Valor);
+   ZeroMemory(_MALong_Valor);
+   // ZeroMemory(_Volume_Valor);
    ZeroMemory(_ADX_Valor);
    ZeroMemory(_MaiorDI);
    ZeroMemory(_MenorDI);
@@ -382,19 +400,22 @@ void Ea_2MAdxClass::GetBuffers(void)
    ZeroMemory(mrate);   
 
    ArraySetAsSeries(_MAShort_Valor,true);
+   ArraySetAsSeries(_MALong_Valor,true);
+  // ArraySetAsSeries(_Volume_Valor,true);
    ArraySetAsSeries(_ADX_Valor,true);
    ArraySetAsSeries(_MaiorDI,true);
    ArraySetAsSeries(_MenorDI,true);
-   ArraySetAsSeries(mrate,true);
-   ArraySetAsSeries(_ADX_Valor,true);   
+   ArraySetAsSeries(mrate,true);      
 
    if(CopyBuffer(_MA_Manusear,0,0,3,_MAShort_Valor)<0 || 
+      CopyBuffer(_MALong_Manusear,0,0,3,_MALong_Valor) < 0 ||
       CopyBuffer(_ADX_Manusear,0,0,3,_ADX_Valor)<0 || 
       CopyBuffer(_ADX_Manusear,1,0,3,_MaiorDI)<0 || 
-      CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0 || 
-      CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0 || 
-      CopyBuffer(_MALong_Manusear,0,0,3,_MALong_Valor) < 0 ||
-      CopyBuffer(_ATR_Manusear,0,0,3,_ATR_Valor)<0) ShowErro("Erro ao copiar Buffers dos indicadores",GetLastError());
+      CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0
+      //CopyBuffer(_Volume_Manusear,0,0,3,_Volume_Valor)<0 ||         
+      //CopyBuffer(_ATR_Manusear,0,0,3,_ATR_Valor)<0
+      ) 
+   ShowErro("Erro ao copiar Buffers dos indicadores",GetLastError());
 
    if(CopyRates(_Simbolo,_Periodo,0,4,mrate)<0)
       ShowErro("Error ao copiar dados da cotação do histórico",GetLastError());
@@ -604,7 +625,7 @@ void Ea_2MAdxClass::GetInformation(void)
         }
      }
    
-   double lucro = profit +(loss) - totalCorretagem;
+   double lucro = (profit - totalCorretagem) - (loss * -1);
       
    string comment  = "ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote;
           comment += (lucro >=0 ? "\nLUCRO=R$" : "\nPREJUIZO=R$") + StringFormat("%.2f",lucro);  

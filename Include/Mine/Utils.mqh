@@ -60,7 +60,8 @@ public:
                      double valorSaida);
                      
    void PlaySoundByID(int id,bool IsTocar=true);
-   void WriteFile(string texto="");                     
+   void WriteFile(string texto="");
+   bool IsHoraValida(string hora);
   };
 
 //+------------------------------------------------------------------+ 
@@ -475,3 +476,34 @@ void Utils::WriteFile(string texto="")
    else
       Print("Falha ao abrir arquivo "+MQL5InfoString(MQL5_PROGRAM_NAME)+".txt, error",GetLastError());
   }
+//+------------------------------------------------------------------+
+//| Validar Hora Digitada                                            |
+//+------------------------------------------------------------------+
+bool Utils::IsHoraValida(string hora)
+{
+   bool retorno = false;
+   
+   if(hora != "")
+   {
+      // Validar hora digitada   
+      string aDelimiter=":";
+      int tDelimiterLength=StringLen(aDelimiter);
+      int tPos1 = 0;
+      int tPos2 = StringFind(hora,aDelimiter,0);
+      
+      string vHora   = "";
+      string vMinuto = "";
+      
+      if(tPos2 > -1)
+        {
+         tPos2=StringFind(hora,aDelimiter,tPos1);
+         vHora=StringSubstr(hora,tPos1,tPos2-tPos1);
+         tPos1=tPos2+tDelimiterLength;
+         vMinuto=StringSubstr(hora,tPos1,tPos2-tPos1);
+         datetime aux = StringToTime(vHora+":"+vMinuto);        
+         retorno = true;
+        }       
+   }
+   
+   return(retorno);
+}

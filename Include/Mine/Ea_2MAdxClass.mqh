@@ -625,7 +625,7 @@ void Ea_2MAdxClass::GetInformation(void)
         }
      }
    
-   double lucro = (profit - totalCorretagem) - (loss * -1);
+   double lucro = (profit - (loss * -1)) - totalCorretagem;
       
    string comment  = "ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote;
           comment += (lucro >=0 ? "\nLUCRO=R$" : "\nPREJUIZO=R$") + StringFormat("%.2f",lucro);  

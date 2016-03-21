@@ -627,18 +627,22 @@ void Ea_2MAdxClass::GetInformation(void)
    
    double lucro = (profit - (loss * -1)) - totalCorretagem;
       
-   string comment  = "ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote;
+   string comment  = "ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote+" SL: "+(string)_StopLoss+"p TP: "+(string)_TakeProfit+"p";
           comment += (lucro >=0 ? "\nLUCRO=R$" : "\nPREJUIZO=R$") + StringFormat("%.2f",lucro);  
           //comment += "\nGAIN=R$"+StringFormat("%.2f",profit);
           //comment += "\nLOSS=R$"+StringFormat("%.2f",loss);
           comment += "\nCORRETAGEM=R$"+StringFormat("%.2f",totalCorretagem);
           comment += "\nTOTAL GAIN="+StringFormat("%d",totalGains);
           comment += "\nTOTAL LOSS="+StringFormat("%d",totalLoss);
-  if(_UsarSaidaParcial)
-          comment += "\nS.PARCIAL=" + (string)(_UsarSaidaParcial ? "Sim":"Não");
+  if(_UsarSaidaParcial && _Lote > 1 && _ValorSaidaParcial_1>0)
+  {
+    comment += "\nS.PARCIAL= 1ª " + (string)_ValorSaidaParcial_1 +"p ";
+    comment += (_Lote > 2 && _ValorSaidaParcial_2>0 ? "2ª "+(string)_ValorSaidaParcial_2+"p ":"");  // (string)(_UsarSaidaParcial && _Lote > 1 ? "Sim":"Não");
+  }
+    
   if(_UsarBreakEven && _BreakEvenVal > 0)
           comment += "\nBREAKEVEN=" + (string)_BreakEvenVal + "p";
-   if(_UsarTralingStop && _InicioTrailingStop)
+   if(_UsarTralingStop && _InicioTrailingStop > 0)
           comment += "\nTRAILINGSTOP=" + (string)_InicioTrailingStop + "p";
   if(_PrecoDeAjuste >0) 
           comment += "\nP.AJUSTE=" + (string)(_UsarPrecoAjuste ? "Sim":"Não");
@@ -694,7 +698,7 @@ void Ea_2MAdxClass::SaidaParcial(int tipoOrder)
         _clUtils.SetNumeroMagico(_NumeroMagico);
         primeiraSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_1,_ValorSaidaParcial_1);
       } // Executar a 2ª Saida parcial
-      else if(segundaSaida == false && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
+      else if(segundaSaida == false && primeiraSaida && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
       {
          _clUtils.SetNumeroMagico(_NumeroMagico);
          segundaSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_2,_ValorSaidaParcial_2);

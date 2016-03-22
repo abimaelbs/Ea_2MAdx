@@ -634,10 +634,11 @@ void Ea_2MAdxClass::GetInformation(void)
           comment += "\nCORRETAGEM=R$"+StringFormat("%.2f",totalCorretagem);
           comment += "\nTOTAL GAIN="+StringFormat("%d",totalGains);
           comment += "\nTOTAL LOSS="+StringFormat("%d",totalLoss);
-  if(_UsarSaidaParcial && _Lote > 1 && _ValorSaidaParcial_1>0)
+          
+  if(_UsarSaidaParcial && _Lote > 1 && (_ValorSaidaParcial_1>0 || _ValorSaidaParcial_2 >0) && (_LoteSaidaParcial_1>0 || _LoteSaidaParcial_2>0))
   {
-    comment += "\nS.PARCIAL= 1ª " + (string)_ValorSaidaParcial_1 +"p ";
-    comment += (_Lote > 2 && _ValorSaidaParcial_2>0 ? "2ª "+(string)_ValorSaidaParcial_2+"p ":"");  // (string)(_UsarSaidaParcial && _Lote > 1 ? "Sim":"Não");
+    comment += "\nS.PARCIAL=" + (_ValorSaidaParcial_1>0 && _LoteSaidaParcial_1>0 ? +" 1ª "+(string)_ValorSaidaParcial_1 +"p":"");
+    comment += (_Lote > 2 && _ValorSaidaParcial_2>0 && _LoteSaidaParcial_2>0 ? " 2ª "+(string)_ValorSaidaParcial_2+"p":"");
   }
     
   if(_UsarBreakEven && _BreakEvenVal > 0)
@@ -698,7 +699,7 @@ void Ea_2MAdxClass::SaidaParcial(int tipoOrder)
         _clUtils.SetNumeroMagico(_NumeroMagico);
         primeiraSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_1,_ValorSaidaParcial_1);
       } // Executar a 2ª Saida parcial
-      else if(segundaSaida == false && primeiraSaida && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
+      else if(segundaSaida == false && _ValorSaidaParcial_2 > 0 && _LoteSaidaParcial_2 > 0 && _UsarSaidaParcial)
       {
          _clUtils.SetNumeroMagico(_NumeroMagico);
          segundaSaida = _clUtils.SaidaParcial(_Simbolo,tipoOrder,_LoteSaidaParcial_2,_ValorSaidaParcial_2);

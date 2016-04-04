@@ -26,6 +26,7 @@ double totalCorretagem,
 bool   primeiraSaida,
        segundaSaida,
        tocarSom = false;
+bool static _MetaOk;
 
 //+------------------------------------------------------------------+
 //|   Declaração                                                     |
@@ -104,6 +105,7 @@ public:
    /* Métodos Get */
    string GetSimbolo() { return(StringSubstr(_Simbolo,0,3)); }
    ENUM_TIMEFRAMES GetPeriodo() { return(_Periodo); }
+   bool GetMetaOk() { return _MetaOk; }
    
    /* Métodos Set*/
    void SetLote(double lote){ _Lote=lote; }
@@ -184,6 +186,7 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    //--- resetting error code to zero
    ResetLastError(); 
        
+   _MetaOk = false;
    _MALong_Manusear= iCustom(_Simbolo,_Periodo,"Custom_iMALong", maLong, _MetodoMA, PRICE_CLOSE);
    _MA_Manusear    = iCustom(_Simbolo,_Periodo,"Custom_iMAShort", ma, _MetodoMA, PRICE_CLOSE);    
    _ADX_Manusear   = iCustom(_Simbolo,_Periodo,"CustomADX",14);
@@ -288,7 +291,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
                           
       // ADX maior que valor mínimo e +DI acima de -DI e ADX maior que +DI
       IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && //_ADX_Valor[0] > _MaiorDI[0] && 
-                        _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1] && _MenorDI[0] > 9);      
+                        _MaiorDI[0] > _MenorDI[0] && _MaiorDI[0] > _MaiorDI[1]);// && _MenorDI[0] > 9);      
             
       // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
       IsCondition_4 = (mrate[0].low > mrate[1].low && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
@@ -331,7 +334,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
                           
       // ADX maior que valor mínimo e +DI acima de -DI e ADX maior que -DI
       IsCondition_3 = ( _ADX_Valor[0] > _Adx_Minimo && _ADX_Valor[0] > _ADX_Valor[1] && //_ADX_Valor[0] > _MenorDI[0] &&
-                        _MenorDI[0] > _MaiorDI[0] && _MenorDI[0] > _MenorDI[1] && _MaiorDI[0] > 9);
+                        _MenorDI[0] > _MaiorDI[0] && _MenorDI[0] > _MenorDI[1]);// && _MaiorDI[0] > 9);
            
       // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
       IsCondition_4 = (mrate[0].high < mrate[1].high && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
@@ -363,7 +366,7 @@ bool Ea_2MAdxClass::IsOperar(void)
 {
    if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote)) 
    {
-      Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");
+      Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");      
       return(false);
    }
    if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
@@ -509,6 +512,7 @@ bool Ea_2MAdxClass::CheckCloseTrade()
       
       if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote))
       {
+         _MetaOk = true;
          ClosePosition();
          return(true);
       }     

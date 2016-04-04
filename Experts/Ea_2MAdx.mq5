@@ -86,8 +86,6 @@ input int      EA_Magico=12345;  // Identificador EA
 // Criando objeto da classe
 CPositionInfo cPos;
 Ea_2MAdxClass CExpert;
-
-ENUM_ORDER_TYPE _TipoOrder;
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -143,8 +141,7 @@ int OnInit()
    if(CExpert.GetPeriodo() < 2 ) Print("Estratégia melhor em período acima de 1 minuto");
    if(UsarTralingStop && UsarBreakEven && BreakEven>0 && MudancaTrailing<PontosAcimaEntrada && MudancaTrailing > 0)
       return CExpert.ShowErro("Valor mudança Trailing Stop não pode ser menor que Pontos acima do preço de entrada do BreakEven.\nEA será fechado",NULL);     
-      
-   _TipoOrder = -1;
+         
    CExpert.GetInformation();
    CExpert.DesenharOBJ(PrecoAjuste,CorLinhaAjuste);
    Print(MQL5InfoString(MQL5_PROGRAM_NAME)," está executando");
@@ -162,9 +159,7 @@ void OnDeinit(const int reason)
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
 void OnTick()
- {
-   _TipoOrder = -1;
-   
+ {      
    //--- Verifica se tem barras suficiente
    if(Bars(_Symbol,_Period)<30) 
    {
@@ -172,10 +167,10 @@ void OnTick()
       return;
    }
 
-   if(!cPos.Select(_Symbol)) 
+   if(!cPos.Select(_Symbol) && !CExpert.GetMetaOk())
    {     
-      _TipoOrder=CExpert.CheckOpenTrade();
-
+      ENUM_ORDER_TYPE _TipoOrder = CExpert.CheckOpenTrade();
+      
       if(_TipoOrder==ORDER_TYPE_BUY || _TipoOrder==ORDER_TYPE_SELL) 
       {         
          CExpert.AbrirPosicao(_TipoOrder);

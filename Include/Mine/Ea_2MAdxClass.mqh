@@ -154,7 +154,7 @@ public:
    void              TrainlingStop(ENUM_POSITION_TYPE TypeOrder);
    void              GetInformation();
    void              DesenharOBJ(double preco,long cor);  
-   void              SaidaParcial(int tipoOrder); 
+   void              SaidaParcial(int tipoOrder);    
 protected:
    void              GetBuffers();      
    void              ClosePosition();
@@ -503,7 +503,8 @@ bool Ea_2MAdxClass::CheckCloseTrade()
    // Se hora de saida return true ou verifica setup de saida    
     if(_clUtils.ValidarHoraSaida(_HoraFim))
      {
-         ClosePosition();
+         //ClosePosition();
+         _clUtils.SaidaMeta(_Simbolo);
          return(true);
      }
    else
@@ -513,7 +514,9 @@ bool Ea_2MAdxClass::CheckCloseTrade()
       if(_clUtils.IsMetaDiaria(_ValorTotalMeta,_TipoMeta,totalProfit,valarTotalLoss,_ValorCorretagem,totalCorretagem,_Lote))
       {
          _MetaOk = true;
-         ClosePosition();
+         
+         _clUtils.SaidaMeta(_Simbolo);
+         //ClosePosition();
          return(true);
       }     
      }
@@ -710,3 +713,4 @@ void Ea_2MAdxClass::SaidaParcial(int tipoOrder)
       }
    }
 }
+

@@ -62,6 +62,7 @@ public:
    void PlaySoundByID(int id,bool IsTocar=true);
    void WriteFile(string texto="");
    bool IsHoraValida(string hora);
+   void SaidaMeta(string simbolo );
   };
 
 //+------------------------------------------------------------------+ 
@@ -507,3 +508,48 @@ bool Utils::IsHoraValida(string hora)
    
    return(retorno);
 }
+
+void Utils::SaidaMeta(string simbolo)
+{
+   if(!SymbolInfoTick(simbolo,precoRecente))
+   {
+      Print("Erro ao obter a última cotação de preço",GetLastError());
+      return;
+   }
+   
+   if(PositionSelect(simbolo))
+   {      
+      int    pos_type      = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      double posisao_tp    = PositionGetDouble(POSITION_TP);
+      double posisao_sl    = PositionGetDouble(POSITION_SL); 
+      double precoEntrada  = NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN),_Digits);
+      
+      if(pos_type == POSITION_TYPE_BUY && precoEntrada < precoRecente.last)         
+         clTrade.PositionModify(simbolo,precoRecente.last, posisao_tp);
+      else if(pos_type == POSITION_TYPE_SELL && precoEntrada > precoRecente.last)         
+         clTrade.PositionModify(simbolo,precoRecente.last, posisao_tp);         
+   }
+}
+
+/*
+//+------------------------------------------------------------------+
+//| GETTING SYMBOL PROPERTIES                                        |
+//+------------------------------------------------------------------+
+void GetPositionProperties()
+  {
+   pos_symbol     =PositionGetString(POSITION_SYMBOL);
+   pos_comment    =PositionGetString(POSITION_COMMENT);
+   pos_magic      =PositionGetInteger(POSITION_MAGIC);
+   pos_price      =PositionGetDouble(POSITION_PRICE_OPEN);
+   pos_cprice     =PositionGetDouble(POSITION_PRICE_CURRENT);
+   pos_sl         =PositionGetDouble(POSITION_SL);
+   pos_tp         =PositionGetDouble(POSITION_TP);
+   pos_type       =(ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+   pos_volume     =PositionGetDouble(POSITION_VOLUME);
+   pos_commission =PositionGetDouble(POSITION_COMMISSION);
+   pos_swap       =PositionGetDouble(POSITION_SWAP);
+   pos_profit     =PositionGetDouble(POSITION_PROFIT);
+   pos_time       =(datetime)PositionGetInteger(POSITION_TIME);
+   pos_id         =PositionGetInteger(POSITION_IDENTIFIER);
+  }
+*/

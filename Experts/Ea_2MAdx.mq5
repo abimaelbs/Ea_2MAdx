@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Abimael B. Silva."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.07"
+#property version   "1.08"
 #property description "Este EA é basedo em 2 Médias Móveis e um ADX, optimizado para WIN e WDO M1" // Description (line 1)
 #property description "Compra: Média Móvel de curto período deve estar acima da média de Longo período." 
 #property description "Preço acima da Média de curto período, entrada no rompimento e 2 candle" 
@@ -43,7 +43,7 @@ input double   ValorSaidaParcial_2= 250; // Ganho TP Saida Parcial(Pontos)
 
 input string   Sessao_04="===== Configurações Break-Even"; //BreakEven
 input eConfirmar UsarBreakEven=true; // Usar BreakEven ?
-input double   BreakEven=60;         // Valor para início Break Even
+input double   BreakEven=80;         // Valor para início Break Even
 input double   PontosAcimaEntrada=20;// Pontos acima do preço de entrada
 
 input string   Sessao_05="===== Configurações Trailing Stop"; //Trailing Stop
@@ -76,8 +76,8 @@ input string   HoraInicio = "09:15"; // Hora Início do Trader
 input string   HoraFim    = "17:55"; // Hora Fim do Trader
 
 input string   Sessao_10="===== Config. Horário De Não Operar"; // Horário De Não Operar
-input string   WaitHoraInicio = "12:10"; // Hora Início de Aguardar
-input string   WaitHoraFim    = "13:10"; // Hora Fim de Aguardar
+input string   WaitHoraInicio = "15:35"; // Hora Início de Aguardar
+input string   WaitHoraFim    = "16:10"; // Hora Fim de Aguardar
 
 input string   Sessao_11="===== Configuração Identificador EA"; //ID
 input eConfirmar UsarSom = true; // Tocar som ao realizar operação ?

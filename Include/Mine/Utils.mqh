@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
-#property version   "1.2"
+#property version   "1.3"
 #include <Trade/Trade.mqh>
 #include <Mine/Enums.mqh>
 
@@ -525,9 +525,9 @@ void Utils::SaidaMeta(string simbolo)
       double precoEntrada  = NormalizeDouble(PositionGetDouble(POSITION_PRICE_OPEN),_Digits);
       
       if(pos_type == POSITION_TYPE_BUY && precoEntrada < precoRecente.last)         
-         clTrade.PositionModify(simbolo,precoRecente.last, posisao_tp);
+         clTrade.PositionModify(simbolo,precoRecente.bid, posisao_tp);
       else if(pos_type == POSITION_TYPE_SELL && precoEntrada > precoRecente.last)         
-         clTrade.PositionModify(simbolo,precoRecente.last, posisao_tp);         
+         clTrade.PositionModify(simbolo,precoRecente.ask, posisao_tp);         
    }
 }
 

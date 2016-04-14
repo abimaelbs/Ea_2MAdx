@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, MetaQuotes Software Corp."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.07"
+#property version   "1.08"
 
 #include <Trade/Trade.mqh>
 #include <Mine/Utils.mqh>
@@ -185,6 +185,8 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
   {    
    //--- resetting error code to zero
    ResetLastError(); 
+   
+   int subwindow=(int)ChartGetInteger(0,CHART_WINDOWS_TOTAL);      
        
    _MetaOk = false;
    _MALong_Manusear= iCustom(_Simbolo,_Periodo,"Custom_iMALong", maLong, _MetodoMA, PRICE_CLOSE);
@@ -202,7 +204,11 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    totalGains=0;totalLoss=0;totalCorretagem=0;totalProfit=0;valarTotalLoss=0;     
    primeiraSaida = segundaSaida = false;         
       
-   int subwindow=(int)ChartGetInteger(0,CHART_WINDOWS_TOTAL);      
+   int _VWAP_Manusear = iCustom(_Simbolo,_Periodo,"CustomVWAP");
+   
+   if(!ChartIndicatorAdd(0,0,_VWAP_Manusear))       
+      PrintFormat("Falha para adicionar indicador VWAP na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
+   
    if(!ChartIndicatorAdd(0,0,_MALong_Manusear))       
       PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
      
@@ -656,8 +662,8 @@ void Ea_2MAdxClass::GetInformation(void)
           comment += "\nP.AJUSTE=" + (string)(_UsarPrecoAjuste ? "Sim":"Não");
   if(_UsarMetaDiaria && _ValorTotalMeta > 0) 
           comment += "\nM.DIARIA=R$" +  StringFormat("%.2f",_ValorTotalMeta);
-  if(_UsarStopATR >0) 
-          comment += "\nSTOP ATR=" + (string)(_UsarStopATR ? "Sim":"Não");
+  if(_UsarStopATR) 
+          comment += "\nSTOP ATR=Sim";//+ (string)(_UsarStopATR ? "Sim":"Não");
                                        
    Comment(comment);
          

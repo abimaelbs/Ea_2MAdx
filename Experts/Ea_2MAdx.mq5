@@ -5,15 +5,15 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Abimael B. Silva."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.08"
-#property description "Este EA é basedo em 2 Médias Móveis e um ADX, optimizado para WIN e WDO M1" // Description (line 1)
+#property version   "1.09"
+#property description "Utilizando 2 Médias Móveis e o indicador ADX, optimizado para WIN e WDO M2" // Description (line 1)
 #property description "Compra: Média Móvel de curto período deve estar acima da média de Longo período." 
 #property description "Preço acima da Média de curto período, entrada no rompimento e 2 candle" 
 #property description "Venda: Média Móvel de curto período deve estar abaixo da média de Longo período."
 #property description "Preço abaixo da Média de curto período, entrada no rompimento e 2 candle"
 #property description "ADX(14) deve estar acima de 22."
-#property description "ADX(+DI) subindo em 2 candle para compra." 
-#property description "ADX(-DI) subindo em 2 candle para venda." 
+#property description "ADX(+DI) subindo para compra." 
+#property description "ADX(-DI) subindo para venda." 
 #property icon        "\\Images\\Ea_2MAdx.ico"; // A file with the product icon
 
 #include <Mine/Ea_2MAdxClass.mqh>
@@ -119,7 +119,7 @@ int OnInit()
    CExpert.SetValorTotalMeta(TotalMeta);
    CExpert.SetTipoMeta(TipoMeta);
    //CExpert.SetUsarStopATR(UsarStopATR);
-   CExpert.SetTamanhoMaxCadle((_Digits==3 || _Digits==5) ? 10:200); // Tamanho máximo do candle anterior
+   CExpert.SetTamanhoMaxCadle((_Digits==3 || _Digits==5) ? 10:180); // Tamanho máximo do candle anterior
    CExpert.SetUsarSom(UsarSom);   
    CExpert.SetUsarSaidaParcial(UsarSaidaParcial);
    CExpert.SetLoteSaidaParcial_1(LoteSaidaParcial_1);
@@ -139,8 +139,12 @@ int OnInit()
       return CExpert.ShowErro("Ativo diferente de WIN/WDO/EUR futuro!",NULL);    
       
    if(CExpert.GetPeriodo() < 2 ) Print("Estratégia melhor em período acima de 1 minuto");
-   if(UsarTralingStop && UsarBreakEven && BreakEven>0 && MudancaTrailing<PontosAcimaEntrada && MudancaTrailing > 0)
-      return CExpert.ShowErro("Valor mudança Trailing Stop não pode ser menor que Pontos acima do preço de entrada do BreakEven.\nEA será fechado",NULL);     
+   
+   //if(UsarTralingStop && UsarBreakEven && BreakEven>0 && MudancaTrailing<PontosAcimaEntrada && MudancaTrailing > 0)
+      //return CExpert.ShowErro("Valor mudança Trailing Stop não pode ser menor que Pontos acima do preço de entrada do BreakEven.\nEA será fechado",NULL);
+      
+   if(UsarTralingStop && UsarBreakEven && BreakEven>0 && InicioTrailingStop>0 && InicioTrailingStop<BreakEven )
+      return CExpert.ShowErro("Valor Trailing Stop não pode ser menor que BreakEven.\nEA será fechado",NULL);     
          
    CExpert.GetInformation();
    CExpert.DesenharOBJ(PrecoAjuste,CorLinhaAjuste);

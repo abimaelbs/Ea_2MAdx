@@ -75,6 +75,8 @@ private:
    int               _ATR_Manusear;   // Stop ATR
    int               _Volume_Manusear;// Volume 
    double            _Volume_Valor[]; // Volume
+   int               _VWAP_Manusear;  // VWAP
+   double            _VWAP_Valor[];   // VWAP
    
    double            _ATR_Valor[];    // Valor ATR
    string            _HoraInicio;     // Usar controle de horas para entrada na operação
@@ -192,6 +194,8 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    _MALong_Manusear= iCustom(_Simbolo,_Periodo,"Custom_iMALong", maLong, _MetodoMA, PRICE_CLOSE);
    _MA_Manusear    = iCustom(_Simbolo,_Periodo,"Custom_iMAShort", ma, _MetodoMA, PRICE_CLOSE);    
    _ADX_Manusear   = iCustom(_Simbolo,_Periodo,"CustomADX",14);
+   _VWAP_Manusear  = iCustom(_Simbolo,_Periodo,"CustomVWAP");
+   
    //_Volume_Manusear= iVolumes(_Simbolo,_Periodo,VOLUME_TICK); 
    //_ATR_Manusear   = iATR(_Simbolo,_Periodo,14);
 
@@ -203,11 +207,6 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    cTrade.SetExpertMagicNumber(_NumeroMagico);
    totalGains=0;totalLoss=0;totalCorretagem=0;totalProfit=0;valarTotalLoss=0;     
    primeiraSaida = segundaSaida = false;         
-      
-   int _VWAP_Manusear = iCustom(_Simbolo,_Periodo,"CustomVWAP");
-   
-   if(!ChartIndicatorAdd(0,0,_VWAP_Manusear))       
-      PrintFormat("Falha para adicionar indicador VWAP na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
    
    if(!ChartIndicatorAdd(0,0,_MALong_Manusear))       
       PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
@@ -215,8 +214,11 @@ void Ea_2MAdxClass::DoInit(int ma,int maLong)
    if(!ChartIndicatorAdd(0,0,_MA_Manusear))       
       PrintFormat("Falha para adicionar indicador Moving Average na janela do gráfico %d. Código de erro %d", subwindow,GetLastError()); 
      
-    if(!ChartIndicatorAdd(0,1,_ADX_Manusear))       
-      PrintFormat("Falha para adicionar indicador ADX na janela do gráfico %d. Código de erro %d", subwindow,GetLastError());                  
+   if(!ChartIndicatorAdd(0,1,_ADX_Manusear))
+      PrintFormat("Falha para adicionar indicador ADX na janela do gráfico %d. Código de erro %d", subwindow,GetLastError());   
+      
+   if(!ChartIndicatorAdd(0,0,_VWAP_Manusear))
+      PrintFormat("Falha para adicionar indicador VWAP na janela do gráfico %d. Código de erro %d", subwindow,GetLastError());                    
   }
 //+------------------------------------------------------------------+
 //| Destrutor                                                        | 

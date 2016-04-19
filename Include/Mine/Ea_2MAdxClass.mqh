@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, MetaQuotes Software Corp."
 #property link      "abimael.bs@gmail.com"
-#property version   "1.08"
+#property version   "1.09"
 
 #include <Trade/Trade.mqh>
 #include <Mine/Utils.mqh>
@@ -243,6 +243,7 @@ void Ea_2MAdxClass::DoUnit(void)
    IndicatorRelease(_MALong_Manusear);
    IndicatorRelease(_ADX_Manusear);
    //IndicatorRelease(_ATR_Manusear);
+   IndicatorRelease(_VWAP_Manusear);
    
    Comment("");
    
@@ -274,8 +275,8 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       bool IsCondition_2=false;
       bool IsCondition_3=false;
       bool IsCondition_4=false;
-      bool IsCondition_5=false;
-      //bool IsCondition_6=false;
+      bool IsCondition_5=false;      
+      bool IsCondition_6=false;
       
       // Se debugando
       /*
@@ -304,13 +305,16 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       // Se não houve engolfo e última barra menor que 200 pontos para MINI-INDICE
       IsCondition_4 = (mrate[0].low > mrate[1].low && (mrate[1].high - mrate[1].low) < _TamanhoMaxCadle);
       
-       // Se negócio abaixo do preço de ajuste, não comprar
+      // Se negócio abaixo do preço de ajuste, não comprar
       IsCondition_5 = ( latest_price.last > _PrecoDeAjuste);
       
       //IsCondition_6 = (_Volume_Valor[0] > _Volume_Valor[1]);
-                       
+      
+                             
       if( IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
       {
+         IsCondition_6 = ((latest_price.last - _VWAP_Valor[0])*-1 >= _StopLoss );
+         
          if(GetPeriodo()==1)                 
             if(!(mrate[2].high > mrate[3].high)) return(-1); // Se última barra fechada maior que penúltima barra              
           
@@ -329,7 +333,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       IsCondition_3=false;
       IsCondition_4=false;
       IsCondition_5=false;
-      //IsCondition_6=false;
+      IsCondition_6=false;
       /* Se condição de venda.
          Se preço abaixo da média móvel e barra anterior menor que a média móvel.
       */
@@ -354,6 +358,8 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       
       if(IsCondition_1 && IsCondition_2 && IsCondition_3 && IsCondition_4)
       {
+         IsCondition_6 = ((_VWAP_Valor[0] - latest_price.last)*-1 >= _StopLoss );
+         
          if(GetPeriodo()==1)                 
             if(!(mrate[2].low < mrate[3].low)) return(-1); // Se última barra fechada maior que penúltima      
          
@@ -401,11 +407,12 @@ bool Ea_2MAdxClass::IsOperar(void)
 void Ea_2MAdxClass::GetBuffers(void)
   {
    ZeroMemory(_MAShort_Valor);
-   ZeroMemory(_MALong_Valor);
+   ZeroMemory(_MALong_Valor);   
    // ZeroMemory(_Volume_Valor);
    ZeroMemory(_ADX_Valor);
    ZeroMemory(_MaiorDI);
    ZeroMemory(_MenorDI);
+   ZeroMemory(_VWAP_Valor);
    ZeroMemory(_Request);
    ZeroMemory(_Result);
    ZeroMemory(mrate);   
@@ -416,13 +423,15 @@ void Ea_2MAdxClass::GetBuffers(void)
    ArraySetAsSeries(_ADX_Valor,true);
    ArraySetAsSeries(_MaiorDI,true);
    ArraySetAsSeries(_MenorDI,true);
+   ArraySetAsSeries(_VWAP_Valor,true);
    ArraySetAsSeries(mrate,true);      
 
    if(CopyBuffer(_MA_Manusear,0,0,3,_MAShort_Valor)<0 || 
       CopyBuffer(_MALong_Manusear,0,0,3,_MALong_Valor) < 0 ||
       CopyBuffer(_ADX_Manusear,0,0,3,_ADX_Valor)<0 || 
       CopyBuffer(_ADX_Manusear,1,0,3,_MaiorDI)<0 || 
-      CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0
+      CopyBuffer(_ADX_Manusear,2,0,3,_MenorDI)<0 ||
+      CopyBuffer(_VWAP_Manusear,0,0,3,_VWAP_Valor)<0
       //CopyBuffer(_Volume_Manusear,0,0,3,_Volume_Valor)<0 ||         
       //CopyBuffer(_ATR_Manusear,0,0,3,_ATR_Valor)<0
       ) 

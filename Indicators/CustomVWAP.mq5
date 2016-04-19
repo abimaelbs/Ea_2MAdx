@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
-#property version   "1.00"
+#property version   "1.02"
 #property indicator_chart_window
 
 #property indicator_buffers 8
@@ -117,7 +117,7 @@ datetime CreateDateTime(DATE_TYPE nReturnType=DAILY,datetime dtDay=D'2000.01.01 
   }
 
 sinput  string              Indicator_Name="Volume Weighted Average Price (VWAP)";
-input   PRICE_TYPE          Price_Type              = CLOSE_HIGH_LOW;
+input   PRICE_TYPE          Price_Type              = CLOSE_HIGH_LOW; // Preço
 /*
 input   bool                Enable_Daily            = true;
 input   bool                Enable_Weekly           = false;
@@ -133,6 +133,8 @@ input   int                 VWAP_Level_04_Period    = 30;
 input   bool                Enable_Level_05         = false;
 input   int                 VWAP_Level_05_Period    = 40;
 */
+
+bool        Enable_Daily        = true;
 bool        Show_Daily_Value    = true;
 bool        Show_Weekly_Value   = true;
 bool        Show_Monthly_Value  = true;
@@ -175,13 +177,13 @@ int OnInit()
    IndicatorSetInteger(INDICATOR_DIGITS,_Digits);
 
    SetIndexBuffer(0,VWAP_Buffer_Daily,INDICATOR_DATA);
-   SetIndexBuffer(1,VWAP_Buffer_Weekly,INDICATOR_DATA);
-   SetIndexBuffer(2,VWAP_Buffer_Monthly,INDICATOR_DATA);
-   SetIndexBuffer(3,VWAP_Buffer_01,INDICATOR_DATA);
-   SetIndexBuffer(4,VWAP_Buffer_02,INDICATOR_DATA);
-   SetIndexBuffer(5,VWAP_Buffer_03,INDICATOR_DATA);
-   SetIndexBuffer(6,VWAP_Buffer_04,INDICATOR_DATA);
-   SetIndexBuffer(7,VWAP_Buffer_05,INDICATOR_DATA);
+   //SetIndexBuffer(1,VWAP_Buffer_Weekly,INDICATOR_DATA);
+   //SetIndexBuffer(2,VWAP_Buffer_Monthly,INDICATOR_DATA);
+   //SetIndexBuffer(3,VWAP_Buffer_01,INDICATOR_DATA);
+   //SetIndexBuffer(4,VWAP_Buffer_02,INDICATOR_DATA);
+   //SetIndexBuffer(5,VWAP_Buffer_03,INDICATOR_DATA);
+   //SetIndexBuffer(6,VWAP_Buffer_04,INDICATOR_DATA);
+   //SetIndexBuffer(7,VWAP_Buffer_05,INDICATOR_DATA);
 
    ObjectCreate(0,"VWAP_Daily",OBJ_LABEL,0,0,0);
    ObjectSetInteger(0,"VWAP_Daily",OBJPROP_CORNER,3);
@@ -297,9 +299,8 @@ int OnCalculate(const int       rates_total,
       ArrayResize(nPriceArr,rates_total);
       ArrayResize(nTotalTPV,rates_total);
       ArrayResize(nTotalVol,rates_total);
-
-      if(true)   {nIdx = nIdxDaily;   nSumDailyTPV = 0;   nSumDailyVol = 0;}
-      //if(Enable_Daily)   {nIdx = nIdxDaily;   nSumDailyTPV = 0;   nSumDailyVol = 0;}
+      
+      if(Enable_Daily)   {nIdx = nIdxDaily;   nSumDailyTPV = 0;   nSumDailyVol = 0;}
       //if(Enable_Weekly)  {nIdx = nIdxWeekly;  nSumWeeklyTPV = 0;  nSumWeeklyVol = 0;}
       //if(Enable_Monthly) {nIdx = nIdxMonthly; nSumMonthlyTPV = 0; nSumMonthlyVol = 0;}
 

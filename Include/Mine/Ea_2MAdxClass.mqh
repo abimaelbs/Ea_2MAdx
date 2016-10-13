@@ -19,13 +19,18 @@ int   totalGains,
       totalLoss,     
        auxLoss,
        auxGain,       
-       auxOrdem;
+       auxOrdem,
+       gainConsecutivos;
+       
 double totalCorretagem,
        totalProfit,
-       valarTotalLoss;
+       valarTotalLoss,
+       lucroAux;
+       
 bool   primeiraSaida,
        segundaSaida,
        tocarSom = false;
+       
 bool static _MetaOk;
 
 //+------------------------------------------------------------------+
@@ -383,11 +388,18 @@ bool Ea_2MAdxClass::IsOperar(void)
       Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Parabéns, meta alcançada(R$"+StringFormat("%.2f",_ValorTotalMeta)+")!");      
       return(false);
    }
-   if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
+   //if((_TotalGain > 0 && totalGains >= _TotalGain) || (_TotalLoss > 0 && totalLoss >= _TotalLoss) ) 
+   if((_TotalGain > 0 && gainConsecutivos >= _TotalGain && lucroAux > 0 ) || (_TotalLoss > 0 && totalLoss >= _TotalLoss)) 
    {
       Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Total de operações ja alcançada no dia...");
       return(false);
    }
+   
+   // Verifica lucro em porcentagem
+   //if(MarketInfo(_Simbolo,MODE_MARGININIT))
+  // {
+  // }
+  
    if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim))
    { 
       Print(MQL5InfoString(MQL5_PROGRAM_NAME)+" fora de horário, Inicio:"+_HoraInicio+" Fim:"+_HoraFim);
@@ -595,7 +607,8 @@ void Ea_2MAdxClass::GetInformation(void)
    totalCorretagem=0;
    totalGains=0;
    totalLoss=0;
-   valarTotalLoss=0;
+   valarTotalLoss=0;   
+   gainConsecutivos = 0;
          
    //--- scan through all of the deals in the history
    for(int i=0;i<deals;i++)
@@ -631,13 +644,15 @@ void Ea_2MAdxClass::GetInformation(void)
                profit+=result;
                totalProfit+=result;
                totalGains++;
+               gainConsecutivos++;
               }
             //--- input the negative results into the summarized losses
             if(result<0) 
               {
                loss+=result;
                valarTotalLoss+=result;
-               totalLoss++;              
+               totalLoss++;  
+               gainConsecutivos--;            
               }
                              
              totalCorretagem += (_ValorCorretagem * order_volume);            
@@ -650,6 +665,7 @@ void Ea_2MAdxClass::GetInformation(void)
      }
    
    double lucro = (profit - (loss * -1)) - totalCorretagem;
+   lucroAux = lucro;
       
    string comment  = "ORDENS: "+ (string)returns +" VOLUME: " + (string)_Lote+" SL: "+(string)_StopLoss+"p TP: "+(string)_TakeProfit+"p";
           comment += (lucro >=0 ? "\nLUCRO=R$" : "\nPREJUIZO=R$") + StringFormat("%.2f",lucro);  
@@ -661,7 +677,7 @@ void Ea_2MAdxClass::GetInformation(void)
           
   if(_UsarSaidaParcial && _Lote > 1 && (_ValorSaidaParcial_1>0 || _ValorSaidaParcial_2 >0) && (_LoteSaidaParcial_1>0 || _LoteSaidaParcial_2>0))
   {
-    comment += "\nS.PARCIAL=" + (_ValorSaidaParcial_1>0 && _LoteSaidaParcial_1>0 ? +" 1ª "+(string)_ValorSaidaParcial_1 +"p":"");
+    comment += "\nS.PARCIAL=" + (_ValorSaidaParcial_1>0 && _LoteSaidaParcial_1>0 ? " 1ª "+(string)_ValorSaidaParcial_1 +"p":"");
     comment += (_Lote > 2 && _ValorSaidaParcial_2>0 && _LoteSaidaParcial_2>0 ? " 2ª "+(string)_ValorSaidaParcial_2+"p":"");
   }
     
@@ -675,6 +691,9 @@ void Ea_2MAdxClass::GetInformation(void)
           comment += "\nM.DIARIA=R$" +  StringFormat("%.2f",_ValorTotalMeta);
   if(_UsarStopATR) 
           comment += "\nSTOP ATR=Sim";//+ (string)(_UsarStopATR ? "Sim":"Não");
+          
+    double margin_call=AccountInfoDouble(ACCOUNT_MARGIN_SO_CALL);// ACCOUNT_MARGIN_SO_CALL
+    Print("Margin mínina para 1 contrato: "+ StringFormat("%.2f",margin_call) );
                                        
    Comment(comment);
          

@@ -26,13 +26,13 @@
 
 // Parametros de entrada
 input string   Sessao_01="===== Config. do volume (MINI-INDICE)"; // Volume 
-input double   Lote      =3.0;            // Lotes para o Trade
-input double   TakeProfit=500;      // Ganho TP(Pontos)
-input double   StopLoss  =80;         // Perda SL(Pontos)
+input double   Lote      =1.0;            // Lotes para o Trade
+input double   TakeProfit=250;      // Ganho TP(Pontos)
+input double   StopLoss  =100;         // Perda SL(Pontos)
 
 input string   Sessao_02 ="===== Config. Quant. Op. Gain e Loss"; //Total Operações
-input int      MaximoStopGain=0; // Máximo trade com Stop Gain
-input int      MaximoStopLoss=2; // Máximo trade com Stop Loss
+input int      MaximoStopGain=5; // Máximo trade com Stop Gain
+input int      MaximoStopLoss=2; // Máximo trade com Stop Loss 
 
 input string   Sessao_03 ="===== Configuração Realização Parcial"; //Saida Parcial
 input eConfirmar UsarSaidaParcial = true; // Usar Saida Parcial ?
@@ -43,13 +43,13 @@ input double   ValorSaidaParcial_2= 250; // Ganho TP Saida Parcial(Pontos)
 
 input string   Sessao_04="===== Configurações Break-Even"; //BreakEven
 input eConfirmar UsarBreakEven=true; // Usar BreakEven ?
-input double   BreakEven=80;         // Valor para início Break Even
+input double   BreakEven=70;         // Valor para início Break Even
 input double   PontosAcimaEntrada=20;// Pontos acima do preço de entrada
 
 input string   Sessao_05="===== Configurações Trailing Stop"; //Trailing Stop
 input eConfirmar UsarTralingStop =true; // Usar Trailing Stop ?
 input double   InicioTrailingStop=100;  // Início Trailing Stop
-input double   MudancaTrailing   =20;   // Valor mudança Trailing Stop
+input double   MudancaTrailing   =10;   // Valor mudança Trailing Stop
 
 input string   Sessao_06="===== Configuração Preço de Ajuste"; //Preço de Ajuste
 input eConfirmar UsarPrecoAjuste = false; // Comprar/Vender no Preço de ajuste ? 
@@ -60,7 +60,8 @@ input string   Sessao_07="===== Configuração Meta Diária"; //Meta diária
 input eConfirmar UsarMetaDiaria=true;  // Usar Meta Diária ?
 input double   ValorCorretagem = 2.00; // Valor corretagem (R$)
 //input double   ValorTaxas = 9.00;    // Valor taxa IBOV (R$)
-input double   TotalMeta = 150.00;     // Total meta Gain (R$)
+input double   PorcentagemMeta = 0.00; // Valor da Meta em porcentagem (%)
+input double   TotalMeta = 40.00;     // Total meta Gain (R$)
 input eTipoMeta TipoMeta = Liquido;    // Total do valor (Liquido/Bruto)
 //input double   TotalPrejuizo = 100.00;// Limite de Perca (R$)
 
@@ -68,7 +69,7 @@ input string   Sessao_08="===== Configurações Indicadores"; //Indicadores
 input int      MA_Periodo=17;          // Período Média Móvel Curta
 input int      MALong_Periodo=72;      // Período Média Móvel Longa
 input ENUM_MA_METHOD MetodoMM=MODE_EMA;// Método Média Móvel
-input double   Adx_Min=22.0;           // Valor mínimo ADX
+input double   Adx_Min=20.0;           // Valor mínimo ADX
 //input eConfirmar UsarStopATR = false;// Usar Stop ATR
 
 input string   Sessao_09="===== Configuração Horário Trade"; //Horário
@@ -149,6 +150,12 @@ int OnInit()
    CExpert.GetInformation();
    CExpert.DesenharOBJ(PrecoAjuste,CorLinhaAjuste);
    Print(MQL5InfoString(MQL5_PROGRAM_NAME)," está executando");
+   
+   //Print("Initial margin requirements for 1 lot=",Mar MarketInfo(Symbol(),MODE_MARGININIT)); 
+   
+   //int symbol_order_mode=(int)SymbolInfoInteger(symbol,SYMBOL_ORDER_MODE); 
+   
+   //if ((SYMBOL_MARGIN_INITIAL&symbol_order_mode)== SYMBOL_MARGIN_INITIAL)
    
    return(INIT_SUCCEEDED);
   }

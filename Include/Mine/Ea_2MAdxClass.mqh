@@ -98,7 +98,8 @@ private:
    ENUM_MA_METHOD    _MetodoMA;       //        
    int               _TotalGain;      // Guarda o total de gain no dia
    int               _TotalLoss;      // Guarda o total de loss no dia
-   Utils             _clUtils;        // Instancia a classe Util.     
+   Utils             _clUtils;        // Instancia a classe Util.    
+   double            _PorcentagemMeta; // Valor em porcentagem para a meta diária 
 public:   
    /* Métodos Básicos para todos os EA's*/
                      Ea_2MAdxClass(); //Construtor
@@ -153,6 +154,7 @@ public:
    void SetMaxGain(int gain){ _TotalGain=gain; }
    void SetMaxLoss(int loss) { _TotalLoss=loss; }
    void SetUsarSom(bool isSom) {_UsarSom =isSom; }
+   void SetPorcentagemMeta(double porc) { _PorcentagemMeta=porc; };
 
    /* Métodos Públicos */
    bool              CheckCloseTrade();
@@ -393,12 +395,22 @@ bool Ea_2MAdxClass::IsOperar(void)
    {
       Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Total de operações ja alcançada no dia...");
       return(false);
-   }
+   }      
    
-   // Verifica lucro em porcentagem
-   //if(MarketInfo(_Simbolo,MODE_MARGININIT))
-  // {
-  // }
+   //Print("Margem Inicial: " + StringFormat("%.2f",margemInicial));
+   if(_PorcentagemMeta > 0)
+   {
+      // Verifica lucro em porcentagem
+      double margemInicial = SymbolInfoDouble( _Simbolo,SYMBOL_MARGIN_INITIAL);
+      
+      double porcentagem_aux = ((margemInicial*_Lote) * _PorcentagemMeta) / 100;
+      
+      if(porcentagem_aux >= lucroAux )
+      {            
+         Print(MQL5InfoString(MQL5_PROGRAM_NAME)+":Parabéns, meta alcançada com porcentagem de " +(string)margemInicial +"!");      
+         return(false);            
+      }
+   }
   
    if(!_clUtils.ValidarHoraEntrada(_HoraInicio,_HoraFim))
    { 

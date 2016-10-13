@@ -60,7 +60,7 @@ input string   Sessao_07="===== Configuração Meta Diária"; //Meta diária
 input eConfirmar UsarMetaDiaria=true;  // Usar Meta Diária ?
 input double   ValorCorretagem = 2.00; // Valor corretagem (R$)
 //input double   ValorTaxas = 9.00;    // Valor taxa IBOV (R$)
-input double   PorcentagemMeta = 0.00; // Valor da Meta em porcentagem (%)
+input double   PorcentagemMeta = 0.00; // Valor da Meta em porcentagem (%) Lotes
 input double   TotalMeta = 40.00;     // Total meta Gain (R$)
 input eTipoMeta TipoMeta = Liquido;    // Total do valor (Liquido/Bruto)
 //input double   TotalPrejuizo = 100.00;// Limite de Perca (R$)
@@ -127,6 +127,7 @@ int OnInit()
    CExpert.SetValorSaidaParcial_1(ValorSaidaParcial_1);
    CExpert.SetLoteSaidaParcial_2(LoteSaidaParcial_2);
    CExpert.SetValorSaidaParcial_2(ValorSaidaParcial_2);
+   CExpert.SetPorcentagemMeta(PorcentagemMeta);
    
    CExpert.DoInit(MA_Periodo,MALong_Periodo);
    
@@ -149,6 +150,7 @@ int OnInit()
          
    CExpert.GetInformation();
    CExpert.DesenharOBJ(PrecoAjuste,CorLinhaAjuste);
+   
    Print(MQL5InfoString(MQL5_PROGRAM_NAME)," está executando");
    
    //Print("Initial margin requirements for 1 lot=",Mar MarketInfo(Symbol(),MODE_MARGININIT)); 
@@ -157,6 +159,7 @@ int OnInit()
    
    //if ((SYMBOL_MARGIN_INITIAL&symbol_order_mode)== SYMBOL_MARGIN_INITIAL)
    
+      
    return(INIT_SUCCEEDED);
   }
 //+------------------------------------------------------------------+

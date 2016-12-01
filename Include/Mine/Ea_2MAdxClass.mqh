@@ -100,6 +100,8 @@ private:
    int               _TotalLoss;      // Guarda o total de loss no dia
    Utils             _clUtils;        // Instancia a classe Util.    
    double            _PorcentagemMeta; // Valor em porcentagem para a meta diária 
+   bool              _UsarPrecoMedio; // Usar preço médio
+   double            _LotePrecoMedio; // Quantidade de vezes de entrada preço médio (sempre de 1 contrato).
 public:   
    /* Métodos Básicos para todos os EA's*/
                      Ea_2MAdxClass(); //Construtor
@@ -155,6 +157,8 @@ public:
    void SetMaxLoss(int loss) { _TotalLoss=loss; }
    void SetUsarSom(bool isSom) {_UsarSom =isSom; }
    void SetPorcentagemMeta(double porc) { _PorcentagemMeta=porc; };
+   void SetUsarPrecoMedio(bool usdPrecomedio) {_UsarPrecoMedio = usdPrecomedio;}
+   void SetLotePrecoMedio(double loteprecomedio) {_LotePrecoMedio = loteprecomedio;}
 
    /* Métodos Públicos */
    bool              CheckCloseTrade();
@@ -163,7 +167,7 @@ public:
    void              TrainlingStop(ENUM_POSITION_TYPE TypeOrder);
    void              GetInformation();
    void              DesenharOBJ(double preco,long cor);  
-   void              SaidaParcial(int tipoOrder);    
+   void              SaidaParcial(int tipoOrder);       
 protected:
    void              GetBuffers();      
    void              ClosePosition();
@@ -276,7 +280,7 @@ ENUM_ORDER_TYPE Ea_2MAdxClass::CheckOpenTrade(void)
       
    GetBuffers();   
    
-   if(!PositionSelect(_Simbolo))
+   if(!PositionSelect(_Simbolo) || (PositionSelect(_Simbolo) && _UsarPrecoAjuste))
    {
       bool IsCondition_1=false;
       bool IsCondition_2=false;

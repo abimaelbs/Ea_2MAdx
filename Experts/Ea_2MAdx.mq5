@@ -1,16 +1,16 @@
 //+------------------------------------------------------------------+
 //|                                                     Ea_2MAdx.mq5 |
-//|                               Copyright 2017,  Abimael B. Silva. |
+//|                               Copyright 2017,  Abimael. |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Abimael B. Silva."
 #property link      "abimael.bs@gmail.com"
 #property version   "1.09"
-#property description "Utilizando 2 MÈdias MÛveis e o indicador ADX, optimizado para WIN e WDO M2" // Description (line 1)
-#property description "Compra: MÈdia MÛvel de curto perÌodo deve estar acima da mÈdia de Longo perÌodo." 
-#property description "PreÁo acima da MÈdia de curto perÌodo, entrada no rompimento e 2 candle" 
-#property description "Venda: MÈdia MÛvel de curto perÌodo deve estar abaixo da mÈdia de Longo perÌodo."
-#property description "PreÁo abaixo da MÈdia de curto perÌodo, entrada no rompimento e 2 candle"
+#property description "Utilizando 2 M√©dias M√≥veis e o indicador ADX, optimizado para WIN e WDO M2" // Description (line 1)
+#property description "Compra: M√©dia M√≥vel de curto per√≠odo deve estar acima da m√©dia de Longo per√≠odo." 
+#property description "Pre√ßo acima da M√©dia de curto per√≠odo, entrada no rompimento e 2 candle" 
+#property description "Venda: M√©dia M√≥vel de curto per√≠odo deve estar abaixo da m√©dia de Longo per√≠odo."
+#property description "Pre√ßo abaixo da M√©dia de curto per√≠odo, entrada no rompimento e 2 candle"
 #property description "ADX(14) deve estar acima de 22."
 #property description "ADX(+DI) subindo para compra." 
 #property description "ADX(-DI) subindo para venda." 
@@ -21,7 +21,7 @@
 #include <Mine/Utils.mqh>
 
 //+------------------------------------------------------------------+ 
-//| Enumerador dos mÈtodos de criaÁ„o do manipulador                 | 
+//| Enumerador dos m√©todos de cria√ß√£o do manipulador                 | 
 //+------------------------------------------------------------------+ 
 
 // Parametros de entrada
@@ -30,34 +30,34 @@ input double   Lote      =1.0;            // Lotes para o Trade
 input double   TakeProfit=250;      // Ganho TP(Pontos)
 input double   StopLoss  =100;         // Perda SL(Pontos)
 
-input string   Sessao_02 ="===== Config. Quant. Op. Gain e Loss"; //Total OperaÁıes
-input int      MaximoStopGain=5; // M·ximo trade com Stop Gain
-input int      MaximoStopLoss=2; // M·ximo trade com Stop Loss 
+input string   Sessao_02 ="===== Config. Quant. Op. Gain e Loss"; //Total Opera√ß√µes
+input int      MaximoStopGain=5; // M√°ximo trade com Stop Gain
+input int      MaximoStopLoss=2; // M√°ximo trade com Stop Loss 
 
-input string   Sessao_03 ="===== ConfiguraÁ„o RealizaÁ„o Parcial"; //Saida Parcial
+input string   Sessao_03 ="===== Configura√ß√£o Realiza√ß√£o Parcial"; //Saida Parcial
 input eConfirmar UsarSaidaParcial = true; // Usar Saida Parcial ?
 input double   LoteSaidaParcial_1 = 1.0; // Lotes para saida parcial (Primeira)
 input double   ValorSaidaParcial_1= 150; // Ganho TP Saida Parcial(Pontos)
 input double   LoteSaidaParcial_2 = 1.0; // Lotes para saida parcial (Segunda)
 input double   ValorSaidaParcial_2= 250; // Ganho TP Saida Parcial(Pontos)
 
-input string   Sessao_04="===== ConfiguraÁıes Break-Even"; //BreakEven
+input string   Sessao_04="===== Configura√ß√µes Break-Even"; //BreakEven
 input eConfirmar UsarBreakEven=true; // Usar BreakEven ?
-input double   BreakEven=70;         // Valor para inÌcio Break Even
-input double   PontosAcimaEntrada=20;// Pontos acima do preÁo de entrada
+input double   BreakEven=70;         // Valor para in√≠cio Break Even
+input double   PontosAcimaEntrada=20;// Pontos acima do pre√ßo de entrada
 
-input string   Sessao_05="===== ConfiguraÁıes Trailing Stop"; //Trailing Stop
+input string   Sessao_05="===== Configura√ß√µes Trailing Stop"; //Trailing Stop
 input eConfirmar UsarTralingStop =true; // Usar Trailing Stop ?
-input double   InicioTrailingStop=100;  // InÌcio Trailing Stop
-input double   MudancaTrailing   =10;   // Valor mudanÁa Trailing Stop
+input double   InicioTrailingStop=100;  // In√≠cio Trailing Stop
+input double   MudancaTrailing   =10;   // Valor mudan√ßa Trailing Stop
 
-input string   Sessao_06="===== ConfiguraÁ„o PreÁo de Ajuste"; //PreÁo de Ajuste
-input eConfirmar UsarPrecoAjuste = false; // Comprar/Vender no PreÁo de ajuste ? 
-input double   PrecoAjuste    = 0.0;         // PreÁo de Ajuste Preg„o Anterior
-input color    CorLinhaAjuste = clrRoyalBlue; // PreÁo de ajuste(Cor)
+input string   Sessao_06="===== Configura√ß√£o Pre√ßo de Ajuste"; //Pre√ßo de Ajuste
+input eConfirmar UsarPrecoAjuste = false; // Comprar/Vender no Pre√ßo de ajuste ? 
+input double   PrecoAjuste    = 0.0;         // Pre√ßo de Ajuste Preg√£o Anterior
+input color    CorLinhaAjuste = clrRoyalBlue; // Pre√ßo de ajuste(Cor)
 //input ENUM_OBJECT Objeto = OBJ_HLINE;
-input string   Sessao_07="===== ConfiguraÁ„o Meta Di·ria"; //Meta di·ria
-input eConfirmar UsarMetaDiaria=true;  // Usar Meta Di·ria ?
+input string   Sessao_07="===== Configura√ß√£o Meta Di√°ria"; //Meta di√°ria
+input eConfirmar UsarMetaDiaria=true;  // Usar Meta Di√°ria ?
 input double   ValorCorretagem = 2.00; // Valor corretagem (R$)
 //input double   ValorTaxas = 9.00;    // Valor taxa IBOV (R$)
 input double   PorcentagemMeta = 0.00; // Valor da Meta em porcentagem (%) Lotes
@@ -65,26 +65,26 @@ input double   TotalMeta = 40.00;     // Total meta Gain (R$)
 input eTipoMeta TipoMeta = Liquido;    // Total do valor (Liquido/Bruto)
 //input double   TotalPrejuizo = 100.00;// Limite de Perca (R$)
 
-input string   Sessao_08="===== ConfiguraÁıes Indicadores"; //Indicadores
-input int      MA_Periodo=17;          // PerÌodo MÈdia MÛvel Curta
-input int      MALong_Periodo=72;      // PerÌodo MÈdia MÛvel Longa
-input ENUM_MA_METHOD MetodoMM=MODE_EMA;// MÈtodo MÈdia MÛvel
-input double   Adx_Min=20.0;           // Valor mÌnimo ADX
+input string   Sessao_08="===== Configura√ß√µes Indicadores"; //Indicadores
+input int      MA_Periodo=17;          // Per√≠odo M√©dia M√≥vel Curta
+input int      MALong_Periodo=72;      // Per√≠odo M√©dia M√≥vel Longa
+input ENUM_MA_METHOD MetodoMM=MODE_EMA;// M√©todo M√©dia M√≥vel
+input double   Adx_Min=20.0;           // Valor m√≠nimo ADX
 //input eConfirmar UsarStopATR = false;// Usar Stop ATR
 
-input string   Sessao_09="===== ConfiguraÁ„o Hor·rio Trade"; //Hor·rio
-input string   HoraInicio = "09:15"; // Hora InÌcio do Trader
+input string   Sessao_09="===== Configura√ß√£o Hor√°rio Trade"; //Hor√°rio
+input string   HoraInicio = "09:15"; // Hora In√≠cio do Trader
 input string   HoraFim    = "17:55"; // Hora Fim do Trader
 
-input string   Sessao_10="===== Config. Hor·rio De N„o Operar"; // Hor·rio De N„o Operar
-input string   WaitHoraInicio = "15:35"; // Hora InÌcio de Aguardar
+input string   Sessao_10="===== Config. Hor√°rio De N√£o Operar"; // Hor√°rio De N√£o Operar
+input string   WaitHoraInicio = "15:35"; // Hora In√≠cio de Aguardar
 input string   WaitHoraFim    = "16:10"; // Hora Fim de Aguardar
 
-input string   Sessao_11="===== ConfiguraÁ„o Identificador EA"; //ID
-input eConfirmar UsarSom = true; // Tocar som ao realizar operaÁ„o ?
+input string   Sessao_11="===== Configura√ß√£o Identificador EA"; //ID
+input eConfirmar UsarSom = true; // Tocar som ao realizar opera√ß√£o ?
 input int      EA_Magico=12345;  // Identificador EA
 
-input eConfirmar UsarPrecoMedio = false; // Usar preÁo mÈdio ?
+input eConfirmar UsarPrecoMedio = false; // Usar pre√ßo m√©dio ?
 input int      LotePrecoMedio=0;  // Qtd lote entrada.
 
 // Criando objeto da classe
@@ -123,7 +123,7 @@ int OnInit()
    CExpert.SetValorTotalMeta(TotalMeta);
    CExpert.SetTipoMeta(TipoMeta);
    //CExpert.SetUsarStopATR(UsarStopATR);
-   CExpert.SetTamanhoMaxCadle((_Digits==3 || _Digits==5) ? 10:180); // Tamanho m·ximo do candle anterior
+   CExpert.SetTamanhoMaxCadle((_Digits==3 || _Digits==5) ? 10:180); // Tamanho m√°ximo do candle anterior
    CExpert.SetUsarSom(UsarSom);   
    CExpert.SetUsarSaidaParcial(UsarSaidaParcial);
    CExpert.SetLoteSaidaParcial_1(LoteSaidaParcial_1);
@@ -135,26 +135,26 @@ int OnInit()
    CExpert.DoInit(MA_Periodo,MALong_Periodo);
    
    if(WaitHoraInicio != "" && WaitHoraFim =="")
-    return CExpert.ShowErro("Informe a hora final de n„o abrir OperaÁ„o",NULL);
+    return CExpert.ShowErro("Informe a hora final de n√£o abrir Opera√ß√£o",NULL);
       
    if((UsarSaidaParcial && LoteSaidaParcial_1 > Lote) || (UsarSaidaParcial && LoteSaidaParcial_2 > Lote) )   
-      return CExpert.ShowErro("Lote saida parcial n„o deve ser maior que Lote do Trade",NULL);   
+      return CExpert.ShowErro("Lote saida parcial n√£o deve ser maior que Lote do Trade",NULL);   
    
    if(CExpert.GetSimbolo() != EnumToString(WIN) && CExpert.GetSimbolo() != EnumToString(WDO) && CExpert.GetSimbolo() != EnumToString(EUR))        
       return CExpert.ShowErro("Ativo diferente de WIN/WDO/EUR futuro!",NULL);    
       
-   if(CExpert.GetPeriodo() < 2 ) Print("EstratÈgia melhor em perÌodo acima de 1 minuto");
+   if(CExpert.GetPeriodo() < 2 ) Print("Estrat√©gia melhor em per√≠odo acima de 1 minuto");
    
    //if(UsarTralingStop && UsarBreakEven && BreakEven>0 && MudancaTrailing<PontosAcimaEntrada && MudancaTrailing > 0)
-      //return CExpert.ShowErro("Valor mudanÁa Trailing Stop n„o pode ser menor que Pontos acima do preÁo de entrada do BreakEven.\nEA ser· fechado",NULL);
+      //return CExpert.ShowErro("Valor mudan√ßa Trailing Stop n√£o pode ser menor que Pontos acima do pre√ßo de entrada do BreakEven.\nEA ser√° fechado",NULL);
       
    if(UsarTralingStop && UsarBreakEven && BreakEven>0 && InicioTrailingStop>0 && InicioTrailingStop<BreakEven )
-      return CExpert.ShowErro("Valor Trailing Stop n„o pode ser menor que BreakEven.\nEA ser· fechado",NULL);     
+      return CExpert.ShowErro("Valor Trailing Stop n√£o pode ser menor que BreakEven.\nEA ser√° fechado",NULL);     
          
    CExpert.GetInformation();
    CExpert.DesenharOBJ(PrecoAjuste,CorLinhaAjuste);
    
-   Print(MQL5InfoString(MQL5_PROGRAM_NAME)," est· executando");
+   Print(MQL5InfoString(MQL5_PROGRAM_NAME)," est√° executando");
    
    //Print("Initial margin requirements for 1 lot=",Mar MarketInfo(Symbol(),MODE_MARGININIT)); 
    
@@ -180,7 +180,7 @@ void OnTick()
    //--- Verifica se tem barras suficiente
    if(Bars(_Symbol,_Period)<30) 
    {
-      CExpert.ShowErro("Menos de 30 barras, o EA ser· fechado:",GetLastError());
+      CExpert.ShowErro("Menos de 30 barras, o EA ser√° fechado:",GetLastError());
       return;
    }
 
@@ -209,7 +209,7 @@ void OnTick()
    }
 }
 //+------------------------------------------------------------------+
-//| Expert Checar Gains e Loss / Executado a cada operaÁ„o           |
+//| Expert Checar Gains e Loss / Executado a cada opera√ß√£o           |
 //+------------------------------------------------------------------+
 void OnTrade()
 {   

@@ -1,7 +1,7 @@
 //+------------------------------------------------------------------+
 //|                                                    CustomADX.mq5 |
 //|                        Copyright 2016, MetaQuotes Software Corp. |
-//|                                             abimael.bs@gmail.com |
+//|                                             |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, MetaQuotes Software Corp."
 #property link      "abimael.bs@gmail.com"
